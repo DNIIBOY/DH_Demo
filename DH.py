@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from UIHandler import UIHandler
 import json
 import os
 import requests
@@ -8,7 +9,6 @@ import threading
 class DHHTTPHandler(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         super().__init__(request, client_address, server)
-        self.received_data = {}
 
     def _set_response(self):
         self.send_response(200)
@@ -26,24 +26,19 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
 
 class DiffieHellman:
-    def __init__(self, ip, port, name, g=-1, n=-1, secret=-1):
+    def __init__(self, ip, port, name, g=-1, n=-1, secret=-1, public=-1, shared_secret=-1):
         self.ip = ip
         self.port = port
         self.name = name
         self.g = g
         self.n = n
         self.secret = secret
+        self.public = public
+        self.shared_secret = shared_secret
 
         server_address = (self.ip, self.port)
         self.httpd = HTTPServer(server_address, DHHTTPHandler)
         self.server_thread = threading.Thread(target=self.run_server)
-
-    def start(self):
-        self.server_thread.start()
-
-    def stop(self):
-        self.httpd.shutdown()
-        self.server_thread.join()
 
     def send_request(self, address: tuple, request_type: str) -> bool:
         url = f"http://{address[0]}:{address[1]}/"
@@ -80,6 +75,13 @@ class DiffieHellman:
         os.system("cls")
         print(data)
         return response
+
+    def start(self):
+        self.server_thread.start()
+
+    def stop(self):
+        self.httpd.shutdown()
+        self.server_thread.join()
 
     def run_server(self):
         self.httpd.serve_forever()
