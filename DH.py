@@ -1,7 +1,8 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import parse_qs, urlparse
+from DHServer import DHHTTPHandler
+from http.server import HTTPServer
 import json
 import requests
+import threading
 
 
 class DiffieHellman:
@@ -12,26 +13,50 @@ class DiffieHellman:
         self.p = p
         self.g = g
 
+        server_address = (self.ip, self.port)
+        self.httpd = HTTPServer(server_address, DHHTTPHandler)
+        self.server_thread = threading.Thread(target=self.run_server)
 
-class RequestHandler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        parsed_path = urlparse(self.path)
-        params = parse_qs(parsed_path.query)
-        self.send_response(200)
-        self.end_headers()
+    def start(self):
+        self.server_thread.start()
 
-        self.wfile.write(json.dumps({
-            'method': self.command,
-            'params': params,
-            'request_version': self.request_version,
-            'protocol_version': self.protocol_version,
-        }).encode())
-        return
+    def stop(self):
+        self.httpd.server_close()
+        self.server_thread.join()
+
+    def send_request(self, address):
+        url = f"http://{address[0]}:{address[1]}/"
+        data = {"name": self.name}
+        r = requests.post(url, json=data)
+        print(r.text)
+        # return r.json()
+
+    def run_server(self):
+        self.httpd.serve_forever()
 
 
 def main():
-    alice = DiffieHellman("127.0.0.1", 8000, "Alice")
-    bob = DiffieHellman("127.0.0.1", 8001, "Bob")
+    ui = input("(A)lice or (B)ob: ")
+    if ui.lower() == "a":
+        DH = DiffieHellman("127.0.0.1", 8000, "Alice")
+    elif ui.lower() == "b":
+        DH = DiffieHellman("127.0.0.1", 8001, "Bob")
+    else:
+        print("Invalid input")
+        return
+
+    DH.start()
+
+    while True:
+        ui = input("(Q)uit or (S)end: ")
+        if ui.lower() == "q":
+            DH.stop()
+            break
+        elif ui.lower() == "s":
+            if DH.name == "Alice":
+                DH.send_request(("127.0.0.1", 8001))
+            else:
+                DH.send_request(("127.0.0.1", 8000))
 
 
 if __name__ == '__main__':
