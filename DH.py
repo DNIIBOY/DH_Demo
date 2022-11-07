@@ -45,14 +45,24 @@ class DiffieHellman:
         self.httpd.shutdown()
         self.server_thread.join()
 
-    def send_request(self, address):
+    def send_request(self, address: tuple, request_type: str) -> bool:
         url = f"http://{address[0]}:{address[1]}/"
         data = {"name": self.name}
-        r = requests.post(url, json=data)
-        print(r.text)
-        # return r.json()
 
-    def parse_request(self, data):
+        match request_type:
+            case "shared":
+                data["type"] = "shared"
+                data["g"] = self.g
+                data["n"] = self.n
+            case "public":
+                data["type"] = "public"
+            case _:
+                return False
+
+        r = requests.post(url, json=data)
+        return r.json()["success"]  # Check if successful response
+
+    def receive_request(self, data):
         response = {"name": self.name, "success": False}
 
         if data["name"] == self.name:
@@ -68,6 +78,7 @@ class DiffieHellman:
             case _:
                 pass
         os.system("cls")
+        print(data)
         return response
 
     def run_server(self):
@@ -97,9 +108,9 @@ def main():
                 break
             elif ui.lower() == "s":
                 if DH.name == "Alice":
-                    DH.send_request(("127.0.0.1", 8001))
+                    DH.send_request(("127.0.0.1", 8001), "shared")
                 else:
-                    DH.send_request(("127.0.0.1", 8000))
+                    DH.send_request(("127.0.0.1", 8000), "shared")
 
     except KeyboardInterrupt:
         pass
