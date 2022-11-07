@@ -12,24 +12,25 @@ console = Console()
 
 class Placeholder:
     def __init__(self):
+        """Placeholder class for the Diffie-Hellman class"""
         self.name = ""
 
 
 class UIHandler:
     def __init__(self, DH):
         self.DH = DH
-        self.state = UI_STATES[0]
+        self._state = UI_STATES[0]
         self.user = ""
 
     @property
-    def State(self):
+    def state(self):
         return self.state
 
-    @State.setter
-    def State(self, value: str | int):
+    @state.setter
+    def state(self, value: str | int):
         if isinstance(value, int):
             value = UI_STATES[value]
-        self.state = value
+        self._state = value
         match value:
             case "select_user":
                 self.select_user()
@@ -52,13 +53,17 @@ class UIHandler:
         user = input().lower()
         self.user = [u for u in USERS if u.lower().startswith(user)][0]
         self.DH.name = self.user
+        self.state = 1
 
     def pick_shared(self):
         """
         Pick the shared prime and generator
         :return:
         """
-        pass
+        console.clear()
+        name_title = ([alice_art, bob_art] + USERS[2:])[USERS.index(self.user)]
+        console.print(name_title)
+        console.print("Pick a shared prime and generator")
 
     def pick_private(self):
         """
@@ -78,7 +83,7 @@ class UIHandler:
 def main():
     PH = Placeholder()
     UIH = UIHandler(PH)
-    UIH.State = 0
+    UIH.state = 0
 
 
 if __name__ == '__main__':
