@@ -74,7 +74,11 @@ class DiffieHellman:
         self.httpd.serve_forever()
 
 
-if __name__ == "__main__":
+DH = None
+
+
+def main():
+    global DH
     try:
         ui = input("(A)lice or (B)ob: ")
         match ui.lower():
@@ -104,3 +108,7 @@ if __name__ == "__main__":
         raise
 
     DH.stop()
+
+
+if __name__ == "__main__":
+    main()
