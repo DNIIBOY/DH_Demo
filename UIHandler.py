@@ -19,6 +19,8 @@ class Placeholder:
     def __init__(self):
         """Placeholder class for the Diffie-Hellman class"""
         self.name = ""
+        self.g = -1
+        self.p = -1
 
 
 class UIHandler:
@@ -29,7 +31,7 @@ class UIHandler:
 
     @property
     def state(self):
-        return self.state
+        return self._state
 
     @state.setter
     def state(self, value: str | int):
@@ -68,7 +70,7 @@ class UIHandler:
         console.clear()
         name_title = ([alice_art, bob_art] + USERS[2:])[USERS.index(self.user)]
         console.print(name_title)
-        console.print("=" * 35)
+        console.print("=" * 40)
         console.print("Pick a shared prime and generator")
         console.print("Shared prime (p): ", end="")
 
@@ -81,12 +83,31 @@ class UIHandler:
         g = get_value(g, DEFAULT_VALUES["g"])
         console.print(g)
 
+        self.DH.p = p
+        self.DH.g = g
+
+        self.state = 2
+
     def pick_private(self):
         """
-        Pick the private key, for this user
+        Pick the private key for this user
         :return:
         """
-        pass
+        console.clear()
+        name_title = ([alice_art, bob_art] + USERS[2:])[USERS.index(self.user)]
+        console.print(name_title)
+        console.print("=" * 40)
+        console.print(f"Shared prime (p): {self.DH.p}")
+        console.print(f"Generator (g): {self.DH.g}")
+        console.print("=" * 40)
+        console.print("Pick a private key")
+        console.print(f"Private key ({self.user[0].lower()}): ", end="")
+        secret = input()
+        secret = get_value(secret)
+        console.print(secret)
+
+        self.DH.secret = secret
+        self.state = 3
 
     def show_keys(self):
         """
@@ -96,7 +117,7 @@ class UIHandler:
         pass
 
 
-def get_value(inp, default):
+def get_value(inp, default=-1):
     if inp == "":
         inp = pyperclip.paste()
         inp = re.sub(r"(\n|\r|\s|\t)", "", inp)
