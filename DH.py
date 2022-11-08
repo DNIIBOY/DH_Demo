@@ -26,12 +26,12 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
 
 class DiffieHellman:
-    def __init__(self, ip, port, name, g=-1, n=-1, secret=-1, public=-1, shared_secret=-1):
+    def __init__(self, ip, port, name, g=-1, p=-1, secret=-1, public=-1, shared_secret=-1):
         self.ip = ip
         self.port = port
         self.name = name
         self.g = g
-        self.n = n
+        self.n = p
         self.secret = secret
         self.public = public
         self.shared_secret = shared_secret

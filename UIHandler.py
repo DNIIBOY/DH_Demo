@@ -1,10 +1,15 @@
 from AsciiArt import *
 from rich import pretty
 from rich.console import Console
-import os
+import json
+import pyperclip
+import re
 
 UI_STATES = ["select_user", "pick_shared", "pick_private", "show_keys"]
 USERS = ["Alice", "Bob"]
+DEFAULT_VALUES = {}
+with open("defaultValues.json", "r") as f:
+    DEFAULT_VALUES = json.loads(f.read())
 
 pretty.install()
 console = Console()
@@ -63,7 +68,18 @@ class UIHandler:
         console.clear()
         name_title = ([alice_art, bob_art] + USERS[2:])[USERS.index(self.user)]
         console.print(name_title)
+        console.print("=" * 35)
         console.print("Pick a shared prime and generator")
+        console.print("Shared prime (p): ", end="")
+
+        p = input()
+        p = get_value(p, DEFAULT_VALUES["p"])
+        console.print(p)
+
+        console.print("Generator (g): ", end="")
+        g = input()
+        g = get_value(g, DEFAULT_VALUES["g"])
+        console.print(g)
 
     def pick_private(self):
         """
@@ -78,6 +94,21 @@ class UIHandler:
         :return:
         """
         pass
+
+
+def get_value(inp, default):
+    if inp == "":
+        inp = pyperclip.paste()
+        inp = re.sub(r"(\n|\r|\s|\t)", "", inp)
+    try:
+        inp = int(inp)
+    except ValueError:
+        try:
+            inp = int(inp, 16)
+        except ValueError:
+            inp = ""
+    inp = default if not inp else inp
+    return inp
 
 
 def main():
