@@ -21,6 +21,14 @@ class Placeholder:
         self.name = ""
         self.g = -1
         self.p = -1
+        self.port = 9000
+        self.remote_port = 9001
+
+    @staticmethod
+    def send_request(request_type: str) -> bool:
+        """Placeholder for send_request"""
+        print("Sending request of type ", request_type)
+        return True
 
 
 class UIHandler:
@@ -60,6 +68,8 @@ class UIHandler:
         user = input().lower()
         self.user = [u for u in USERS if u.lower().startswith(user)][0]
         self.DH.name = self.user
+        self.DH.port = DEFAULT_VALUES[self.user.lower() + "Port"]
+        self.DH.remote_port = 8000 if self.user == "Bob" else 8001
         self.state = 1
 
     def pick_shared(self):
@@ -85,6 +95,9 @@ class UIHandler:
 
         self.DH.p = p
         self.DH.g = g
+        print("Sending request")
+        self.DH.send_request(request_type="shared")
+        print("Request sent")
 
         self.state = 2
 

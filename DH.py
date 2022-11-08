@@ -1,8 +1,9 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from UIHandler import UIHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import os
 import requests
+import sys
 import threading
 
 
@@ -12,48 +13,52 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
     def _set_response(self):
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
 
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])  # Gets the size of data
+        content_length = int(self.headers["Content-Length"])  # Gets the size of data
         post_data = self.rfile.read(content_length)  # Gets the data itself
-        post_data = json.loads(post_data.decode('utf-8'))  # Parse as json
+        post_data = json.loads(post_data.decode("utf-8"))  # Parse as json
         response = DH.parse_request(post_data)
 
         self._set_response()
-        self.wfile.write(json.dumps(response).encode('utf-8'))  # Send response
+        self.wfile.write(json.dumps(response).encode("utf-8"))  # Send response
 
 
 class DiffieHellman:
-    def __init__(self, ip, port, name, g=-1, p=-1, secret=-1, public=-1, shared_secret=-1):
+    def __init__(self, ip="", port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8081):
         self.ip = ip
         self.port = port
         self.name = name
         self.g = g
-        self.n = p
+        self.p = p
         self.secret = secret
         self.public = public
         self.shared_secret = shared_secret
+        self.remote_ip = remote_ip
+        self.remote_port = remote_port
 
         server_address = (self.ip, self.port)
         self.httpd = HTTPServer(server_address, DHHTTPHandler)
         self.server_thread = threading.Thread(target=self.run_server)
 
-    def send_request(self, address: tuple, request_type: str) -> bool:
-        url = f"http://{address[0]}:{address[1]}/"
+    def send_request(self, request_type: str) -> bool:
+        print("Sending request of type ", request_type)
+        url = f"http://{self.remote_ip[0]}:{self.remote_ip[1]}/"
         data = {"name": self.name}
 
         match request_type:
             case "shared":
                 data["type"] = "shared"
                 data["g"] = self.g
-                data["n"] = self.n
+                data["p"] = self.p
             case "public":
                 data["type"] = "public"
             case _:
                 return False
 
+        print(data)
         r = requests.post(url, json=data)
         return r.json()["success"]  # Check if successful response
 
@@ -65,8 +70,8 @@ class DiffieHellman:
 
         match data["type"]:
             case "shared":
+                self.p = data["p"]
                 self.g = data["g"]
-                self.n = data["n"]
                 response["success"] = True
             case "public":
                 pass
@@ -87,34 +92,14 @@ class DiffieHellman:
         self.httpd.serve_forever()
 
 
-DH = None
-
-
 def main():
     global DH
+    global UIH
+
     try:
-        ui = input("(A)lice or (B)ob: ")
-        match ui.lower():
-            case "a":
-                DH = DiffieHellman("127.0.0.1", 8000, "Alice")
-            case "b":
-                DH = DiffieHellman("127.0.0.1", 8001, "Bob")
-            case _:
-                print("Invalid input")
-
-        DH.start()
-
-        while True:
-            ui = input("(Q)uit or (S)end: ")
-            if ui.lower() == "q":
-                break
-            elif ui.lower() == "s":
-                if DH.name == "Alice":
-                    DH.send_request(("127.0.0.1", 8001), "shared")
-                else:
-                    DH.send_request(("127.0.0.1", 8000), "shared")
-
+        UIH.state = 0
     except KeyboardInterrupt:
+        sys.exit()
         pass
     except:
         DH.stop()
@@ -124,4 +109,6 @@ def main():
 
 
 if __name__ == "__main__":
+    DH = DiffieHellman(ip="127.0.0.1", remote_ip="127.0.0.1")
+    UIH = UIHandler(DH)
     main()
