@@ -20,7 +20,7 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers["Content-Length"])  # Gets the size of data
         post_data = self.rfile.read(content_length)  # Gets the data itself
         post_data = json.loads(post_data.decode("utf-8"))  # Parse as json
-        response = DH.parse_request(post_data)
+        response = DH.receive_request(post_data)
 
         self._set_response()
         self.wfile.write(json.dumps(response).encode("utf-8"))  # Send response
@@ -39,13 +39,11 @@ class DiffieHellman:
         self.remote_ip = remote_ip
         self.remote_port = remote_port
 
-        server_address = (self.ip, self.port)
-        self.httpd = HTTPServer(server_address, DHHTTPHandler)
-        self.server_thread = threading.Thread(target=self.run_server)
+        self.httpd = None  # HTTP server, gets initialized in start()
+        self.server_thread = threading.Thread(target=self.run_server)  # Thread for the HTTP server
 
     def send_request(self, request_type: str) -> bool:
-        print("Sending request of type ", request_type)
-        url = f"http://{self.remote_ip[0]}:{self.remote_ip[1]}/"
+        url = f"http://{self.remote_ip}:{self.remote_port}/"
         data = {"name": self.name}
 
         match request_type:
@@ -58,7 +56,6 @@ class DiffieHellman:
             case _:
                 return False
 
-        print(data)
         r = requests.post(url, json=data)
         return r.json()["success"]  # Check if successful response
 
@@ -70,18 +67,24 @@ class DiffieHellman:
 
         match data["type"]:
             case "shared":
-                self.p = data["p"]
-                self.g = data["g"]
+                try:
+                    self.p = data["p"]
+                    self.g = data["g"]
+                except KeyError:
+                    response["error"] = "Missing parameters"
+                    return response
                 response["success"] = True
             case "public":
                 pass
             case _:
                 pass
         os.system("cls")
-        print(data)
+        UIH.state = 2
         return response
 
     def start(self):
+        server_address = (self.ip, self.port)
+        self.httpd = HTTPServer(server_address, DHHTTPHandler)
         self.server_thread.start()
 
     def stop(self):
@@ -100,7 +103,7 @@ def main():
         UIH.state = 0
     except KeyboardInterrupt:
         sys.exit()
-        pass
+        DH.stop()
     except:
         DH.stop()
         raise

@@ -7,7 +7,6 @@ import re
 
 UI_STATES = ["select_user", "pick_shared", "pick_private", "show_keys"]
 USERS = ["Alice", "Bob"]
-DEFAULT_VALUES = {}
 with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
 
@@ -70,6 +69,7 @@ class UIHandler:
         self.DH.name = self.user
         self.DH.port = DEFAULT_VALUES[self.user.lower() + "Port"]
         self.DH.remote_port = 8000 if self.user == "Bob" else 8001
+        self.DH.start()
         self.state = 1
 
     def pick_shared(self):
@@ -95,9 +95,7 @@ class UIHandler:
 
         self.DH.p = p
         self.DH.g = g
-        print("Sending request")
         self.DH.send_request(request_type="shared")
-        print("Request sent")
 
         self.state = 2
 
