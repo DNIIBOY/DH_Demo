@@ -60,6 +60,7 @@ class DiffieHellman:
         return r.json()["success"]  # Check if successful response
 
     def receive_request(self, data):
+        global main_thread
         response = {"name": self.name, "success": False}
 
         if data["name"] == self.name:
@@ -74,12 +75,17 @@ class DiffieHellman:
                     response["error"] = "Missing parameters"
                     return response
                 response["success"] = True
+
+                main_thread.join()
+                main_thread = threading.Thread(target=state2)
+                main_thread.start()
+                UIH.state = 2
+
             case "public":
                 pass
             case _:
                 pass
 
-        UIH.state = 2
         return response
 
     def start(self):
@@ -89,29 +95,32 @@ class DiffieHellman:
 
     def stop(self):
         self.httpd.shutdown()
-        self.server_thread.join()
+        self.server_thread.join(2)
 
     def run_server(self):
         self.httpd.serve_forever()
 
 
+def state0():
+    global UIH
+    UIH.state = 0
+
+
+def state2():
+    global UIH
+    UIH.state = 2
+
+
 def main():
     global DH
     global UIH
+    global main_thread
 
-    try:
-        UIH.state = 0
-    except KeyboardInterrupt:
-        DH.stop()
-        sys.exit()
-    except:
-        DH.stop()
-        raise
-
-    DH.stop()
+    main_thread.start()
 
 
 if __name__ == "__main__":
     DH = DiffieHellman(ip="127.0.0.1", remote_ip="127.0.0.1")
     UIH = UIHandler(DH)
+    main_thread = threading.Thread(target=state0, daemon=True)
     main()
