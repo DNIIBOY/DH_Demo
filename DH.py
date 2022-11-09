@@ -78,7 +78,7 @@ class DiffieHellman:
                 pass
             case _:
                 pass
-        os.system("cls")
+
         UIH.state = 2
         return response
 
@@ -102,8 +102,8 @@ def main():
     try:
         UIH.state = 0
     except KeyboardInterrupt:
-        sys.exit()
         DH.stop()
+        sys.exit()
     except:
         DH.stop()
         raise
