@@ -3,7 +3,7 @@ from time import sleep
 import json
 import threading
 
-UI_STATES = ["select_user", "pick_shared", "pick_private", "awaiting_private", "show_keys"]
+UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys"]
 with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
 
@@ -49,10 +49,10 @@ class ControlPanel(Tk):
                 self.select_user()
             case "pick_shared":
                 self.pick_shared()
-            case "pick_private":
-                self.pick_private()
-            case "awaiting_private":
-                self.awaiting_private()
+            case "pick_secret":
+                self.pick_secret()
+            case "awaiting_public":
+                self.awaiting_public()
             case "show_keys":
                 self.show_keys()
             case _:
@@ -83,11 +83,11 @@ class ControlPanel(Tk):
         self.DH.send_request("shared")
         self.state = 2
 
-    def submit_private(self, private: int):
+    def submit_secret(self, secret: int):
         """
-        Submit the private value
+        Submit the secret value
         """
-        self.DH.private = private
+        self.DH.secret = secret
         self.DH.calculate_public()
         self.DH.send_request("public")
         if self.DH.remote_public == -1:
@@ -104,7 +104,7 @@ class ControlPanel(Tk):
             remote_public_label.place(relx=0.5, rely=0.4, anchor=CENTER)
             self.temp_items.append(remote_public_label)
             self.state = 3
-        elif self.state == "awaiting_private":
+        elif self.state == "awaiting_public":
             self.state = 4
 
     def start(self):
@@ -223,12 +223,12 @@ class ControlPanel(Tk):
         submit_but.place(relx=0.5, rely=0.8, anchor=CENTER)
         self.temp_items.extend([sub_title, p_label, p_entry, p_default, g_label, g_entry, g_default, submit_but])
 
-    def pick_private(self):
+    def pick_secret(self):
         """
-        Change to the private values selection screen
+        Change to the secret values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Select private value - {self.DH.name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        sub_title = Label(self, text=f"Select personal secret value - {self.DH.name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
@@ -242,7 +242,7 @@ class ControlPanel(Tk):
             bg="#2f4861",
             fg="#7abdff",
             font="Rockwell 14",
-            command=lambda: self.submit_private(int(x_entry.get()))
+            command=lambda: self.submit_secret(int(x_entry.get()))
         )
         p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
@@ -251,16 +251,16 @@ class ControlPanel(Tk):
         submit_but.place(relx=0.5, rely=0.8, anchor=CENTER)
         self.temp_items.extend([sub_title, p_label, g_label, x_label, x_entry, submit_but])
 
-    def awaiting_private(self):
+    def awaiting_public(self):
         """
-        Change to the awaiting private value screen
+        Change to the awaiting public value screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Awaiting private value from {self.DH.other_name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        sub_title = Label(self, text=f"Awaiting public value from {self.DH.other_name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
-        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.private}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
