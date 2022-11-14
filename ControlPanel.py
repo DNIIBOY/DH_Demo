@@ -8,16 +8,31 @@ with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
 
 
+class Placeholder:
+    def __init__(self):
+        """Placeholder class for the Diffie-Hellman class"""
+        self.name = ""
+        self.g = -1
+        self.p = -1
+        self.port = 9000
+        self.remote_port = 9001
+
+    @staticmethod
+    def send_request(request_type: str) -> bool:
+        """Placeholder for send_request"""
+        print("Sending request of type ", request_type)
+        return True
+
+
 class ControlPanel(Tk):
     """
     The main controlpanel for all features of the program
     """
 
-    def __init__(self):
+    def __init__(self, DH):
         super().__init__()
-        self.main_thread = None  # Primary thread for the program
+        self.DH = DH
         self._state = UI_STATES[0]  # Current state of the program
-        self.user = ""  # Alice or Bob
         self.temp_items = []  # Temporary items to be removed when switching screens
 
     @property
@@ -45,8 +60,16 @@ class ControlPanel(Tk):
         """
         Set the selected user
         """
-        self.user = user
+        self.DH.name = user
         self.state = 1
+
+    def submit_shared(self, p: int, g: int):
+        """
+        Submit the shared values
+        """
+        self.DH.p = p
+        self.DH.g = g
+        self.state = 2
 
     def start(self):
         """
@@ -116,27 +139,68 @@ class ControlPanel(Tk):
         Change to the shared values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Select shared values - {self.user}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        sub_title = Label(self, text=f"Select shared values - {self.DH.name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text="Shared prime (p):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         p_entry = Entry(self, width=35, font="Rockwell 14")
+        p_default = Button(
+            self,
+            text="Default",
+            width=10,
+            height=1,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14",
+            command=lambda: p_entry.insert(0, DEFAULT_VALUES["p"])
+        )
+
         g_label = Label(self, text="Shared generator (g):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         g_entry = Entry(self, width=35, font="Rockwell 14")
-        submit_but = Button(self, text="Submit", width=9, height=2, bg="#2f4861", fg="#7abdff", font="Rockwell 14")
+        g_default = Button(
+            self,
+            text="Default",
+            width=10,
+            height=1,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14",
+            command=lambda: g_entry.insert(0, DEFAULT_VALUES["g"])
+        )
+
+        submit_but = Button(
+            self,
+            text="Submit",
+            width=9,
+            height=2,
+            bg="#2f4861",
+            fg="#7abdff", font="Rockwell 14",
+            command=lambda: self.submit_shared(int(p_entry.get()), int(g_entry.get()))
+        )
+
         p_label.place(relx=0.25, rely=0.4, anchor=CENTER)
         p_entry.place(relx=0.75, rely=0.4, anchor=CENTER)
+        p_default.place(relx=0.75, rely=0.46, anchor=CENTER)
         g_label.place(relx=0.25, rely=0.6, anchor=CENTER)
         g_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
+        g_default.place(relx=0.75, rely=0.66, anchor=CENTER)
         submit_but.place(relx=0.5, rely=0.8, anchor=CENTER)
-        self.temp_items.extend([sub_title, p_label, p_entry, g_label, g_entry])
+        self.temp_items.extend([sub_title, p_label, p_entry, p_default, g_label, g_entry, g_default, submit_but])
 
     def pick_private(self):
         """
         Change to the private values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text="Select private value", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        sub_title = Label(self, text=f"Select private value - {self.DH.name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
+        p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        x_label = Label(self, text=f"Private value ({'a' if self.DH.name == 'Alice' else 'b'}):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        x_entry = Entry(self, width=35, font="Rockwell 14")
+        p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
+        g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
+        x_label.place(relx=0.25, rely=0.6, anchor=CENTER)
+        x_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
         self.temp_items.append(sub_title)
 
     def show_keys(self):
@@ -150,6 +214,7 @@ class ControlPanel(Tk):
 
 
 if __name__ == '__main__':
-    CP = ControlPanel()
+    PH = Placeholder()
+    CP = ControlPanel(PH)
     CP.select_user()
     CP.start()

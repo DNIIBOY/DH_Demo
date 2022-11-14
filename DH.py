@@ -101,19 +101,8 @@ class DiffieHellman:
         self.httpd.serve_forever()
 
 
-def state0():
-    global UIH
-    UIH.state = 0
-
-
-def state2():
-    global UIH
-    UIH.state = 2
-
-
 def main():
     global DH
-    global UIH
     global main_thread
 
     main_thread.start()
