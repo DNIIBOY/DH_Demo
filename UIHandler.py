@@ -61,7 +61,7 @@ class UIHandler:
         """
         Selects the user to be Alice or Bob
         """
-        console.clear()
+        # console.clear()
         console.print(title)
         console.print(f"{', '.join([f'({u[0]}){u[1:]}' for u in USERS[:-1]])} or ({USERS[-1][0]}){USERS[-1][1:]}: ", end="")
         user = input().lower()
@@ -77,7 +77,7 @@ class UIHandler:
         Pick the shared prime and generator
         :return:
         """
-        console.clear()
+        # console.clear()
         name_title = ([alice_art, bob_art] + USERS[2:])[USERS.index(self.user)]
         console.print(name_title)
         console.print("=" * 40)
@@ -104,7 +104,7 @@ class UIHandler:
         Pick the private key for this user
         :return:
         """
-        console.clear()
+        # console.clear()
         name_title = ([alice_art, bob_art] + USERS[2:])[USERS.index(self.user)]
         console.print(name_title)
         console.print("=" * 40)

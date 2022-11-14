@@ -27,8 +27,7 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
 
 class DiffieHellman:
-    def __init__(self, ip="", port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8081):
-        self.ip = ip
+    def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8081):
         self.port = port
         self.name = name
         self.g = g
@@ -89,7 +88,8 @@ class DiffieHellman:
         return response
 
     def start(self):
-        server_address = (self.ip, self.port)
+        server_address = ("", self.port)
+        print("Starting server on ", server_address)
         self.httpd = HTTPServer(server_address, DHHTTPHandler)
         self.server_thread.start()
 
@@ -120,7 +120,7 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(ip="127.0.0.1", remote_ip="127.0.0.1")
+    DH = DiffieHellman(port=8000, remote_ip="127.0.0.1")
     UIH = UIHandler(DH)
-    main_thread = threading.Thread(target=state0, daemon=True)
+    main_thread = threading.Thread(target=state0)
     main()
