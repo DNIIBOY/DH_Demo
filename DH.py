@@ -70,7 +70,6 @@ class DiffieHellman:
         Calculates the public key, based on the secret key and the shared parameters
         :return: The public key
         """
-        print(self.g, self.secret, self.p)
         self.public = pow(self.g, self.secret, self.p)
         return self.public
 
