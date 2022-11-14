@@ -83,6 +83,17 @@ class ControlPanel(Tk):
         self.DH.send_request("shared")
         self.state = 2
 
+    def submit_private(self, private: int):
+        """
+        Submit the private value
+        """
+        self.DH.private = private
+        self.DH.send_request("private")
+        if self.DH.remote_public == -1:
+            self.state = 3
+        else:
+            self.state = 4
+
     def get_public(self, remote_public: int):
         """
         Get the public values
@@ -222,11 +233,22 @@ class ControlPanel(Tk):
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_entry = Entry(self, width=35, font="Rockwell 14")
+        submit_but = Button(
+            self,
+            text="Submit",
+            width=9,
+            height=2,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14",
+            command=lambda: self.submit_private(int(x_entry.get()))
+        )
         p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
         x_label.place(relx=0.25, rely=0.6, anchor=CENTER)
         x_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
-        self.temp_items.append(sub_title)
+        submit_but.place(relx=0.5, rely=0.8, anchor=CENTER)
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, x_entry, submit_but])
 
     def awaiting_private(self):
         """
@@ -235,7 +257,15 @@ class ControlPanel(Tk):
         self.clear_temp_items()
         sub_title = Label(self, text=f"Awaiting private value from {self.DH.other_name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        self.temp_items.append(sub_title)
+        p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.private}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
+        g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
+        x_label.place(relx=0.50, rely=0.5, anchor=CENTER)
+        X_label.place(relx=0.50, rely=0.6, anchor=CENTER)
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label])
 
     def show_keys(self):
         """

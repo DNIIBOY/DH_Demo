@@ -80,10 +80,12 @@ class DiffieHellman:
             case _:
                 return False
 
+        print("Sending request: ", data)
         r = requests.post(url, json=data).json()
         return r["success"]  # Return True, if successful
 
     def receive_request(self, data):
+        print("Received request: ", data)
         response = {"name": self.name, "success": False}
 
         if data["name"].lower() != self.other_name.lower():
