@@ -88,7 +88,8 @@ class ControlPanel(Tk):
         Submit the private value
         """
         self.DH.private = private
-        self.DH.send_request("private")
+        self.DH.calculate_public()
+        self.DH.send_request("public")
         if self.DH.remote_public == -1:
             self.state = 3
         else:

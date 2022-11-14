@@ -65,6 +65,14 @@ class DiffieHellman:
             return "Alice"
         return ""
 
+    def calculate_public(self) -> int:
+        """
+        Calculates the public key, based on the secret key and the shared parameters
+        :return: The public key
+        """
+        self.public = pow(self.g, self.secret, self.p)
+        return self.public
+
     def send_request(self, request_type: str) -> bool:
         url = f"http://{self.remote_ip}:{self.remote_port}/"
         data = {"name": self.name}
