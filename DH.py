@@ -29,7 +29,7 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 class DiffieHellman:
     def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8080):
         self.port = port
-        self.name = name
+        self._name = name
         self.g = g
         self.p = p
         self.secret = secret
@@ -40,6 +40,21 @@ class DiffieHellman:
 
         self.httpd = None  # HTTP server, gets initialized in start()
         self.server_thread = threading.Thread(target=self.run_server)  # Thread for the HTTP server
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+        value = value.lower()
+        if value == "alice":
+            self.port = 8000
+            self.remote_port = 8001
+        elif value == "bob":
+            self.port = 8001
+            self.remote_port = 8000
 
     def send_request(self, request_type: str) -> bool:
         url = f"http://{self.remote_ip}:{self.remote_port}/"
@@ -70,7 +85,7 @@ class DiffieHellman:
                 try:
                     self.p = data["p"]
                     self.g = data["g"]
-                    CP.submit_shared(self.p, self.g)
+                    CP.set_shared(self.p, self.g)
                 except KeyError:
                     response["error"] = "Missing parameters"
                     return response
@@ -100,11 +115,13 @@ class DiffieHellman:
 def main():
     global DH
     global CP
-    DH.start()
     CP.start()
+
+    DH.stop()
+    print("Exiting...")
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(port=8000, remote_ip="127.0.0.1")
+    DH = DiffieHellman(remote_ip="127.0.0.1")
     CP = ControlPanel(DH)
     main()

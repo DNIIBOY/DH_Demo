@@ -58,17 +58,27 @@ class ControlPanel(Tk):
 
     def set_selected_user(self, user: str):
         """
-        Set the selected user
+        Set the selected user, and start receiving requests
         """
         self.DH.name = user
+        self.DH.start()
         self.state = 1
 
-    def submit_shared(self, p: int, g: int):
+    def set_shared(self, p: int, g: int):
         """
-        Submit the shared values
+        Set the shared values
         """
         self.DH.p = p
         self.DH.g = g
+        self.state = 2
+
+    def submit_shared(self, p: int, g: int):
+        """
+        Submit the shared values and send them to the other user
+        """
+        self.DH.p = p
+        self.DH.g = g
+        self.DH.send_request("shared")
         self.state = 2
 
     def start(self):
