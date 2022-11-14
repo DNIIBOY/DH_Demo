@@ -1,4 +1,4 @@
-from UIHandler import UIHandler
+from ControlPanel import ControlPanel
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import os
@@ -27,7 +27,7 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
 
 class DiffieHellman:
-    def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8081):
+    def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8080):
         self.port = port
         self.name = name
         self.g = g
@@ -70,15 +70,11 @@ class DiffieHellman:
                 try:
                     self.p = data["p"]
                     self.g = data["g"]
+                    CP.submit_shared(self.p, self.g)
                 except KeyError:
                     response["error"] = "Missing parameters"
                     return response
                 response["success"] = True
-
-                main_thread.join()
-                main_thread = threading.Thread(target=state2)
-                main_thread.start()
-                UIH.state = 2
 
             case "public":
                 pass
@@ -103,13 +99,12 @@ class DiffieHellman:
 
 def main():
     global DH
-    global main_thread
-
-    main_thread.start()
+    global CP
+    DH.start()
+    CP.start()
 
 
 if __name__ == "__main__":
     DH = DiffieHellman(port=8000, remote_ip="127.0.0.1")
-    UIH = UIHandler(DH)
-    main_thread = threading.Thread(target=state0)
+    CP = ControlPanel(DH)
     main()

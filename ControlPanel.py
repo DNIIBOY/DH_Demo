@@ -78,6 +78,7 @@ class ControlPanel(Tk):
         print("Setting up main window...")
         self.setup_main_window()
         print("Running program...")
+        self.select_user()
         self.mainloop()
 
     def setup_main_window(self) -> None:
@@ -216,5 +217,4 @@ class ControlPanel(Tk):
 if __name__ == '__main__':
     PH = Placeholder()
     CP = ControlPanel(PH)
-    CP.select_user()
     CP.start()
