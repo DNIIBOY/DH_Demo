@@ -27,13 +27,15 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
 
 class DiffieHellman:
-    def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, shared_secret=-1, remote_ip="", remote_port=8080):
+    def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, remote_public=-1, shared_secret=-1, remote_ip="", remote_port=8080):
         self.port = port
         self._name = name
+        self.other_name = "Alice" if name == "Bob" else "Bob"
         self.g = g
         self.p = p
         self.secret = secret
         self.public = public
+        self.remote_public = remote_public
         self.shared_secret = shared_secret
         self.remote_ip = remote_ip
         self.remote_port = remote_port
@@ -65,13 +67,21 @@ class DiffieHellman:
                 data["type"] = "shared"
                 data["g"] = self.g
                 data["p"] = self.p
+                r = requests.post(url, json=data).json()
+                return r["success"]  # Return True, if successful
             case "public":
                 data["type"] = "public"
+                data["public"] = self.public
+                r = requests.post(url, json=data).json()
+                if r["success"]:
+                    if r["status"] == "complete":  # If the remote has already decided on a public key
+                        self.remote_public = r["public"]
+                        CP.get_public(self.remote_public)
+
+                    return True  # Return True, if successful
+
             case _:
                 return False
-
-        r = requests.post(url, json=data)
-        return r.json()["success"]  # Check if successful response
 
     def receive_request(self, data):
         global main_thread
@@ -85,16 +95,26 @@ class DiffieHellman:
                 try:
                     self.p = data["p"]
                     self.g = data["g"]
-                    CP.set_shared(self.p, self.g)
+                    CP.get_shared(self.p, self.g)
                 except KeyError:
                     response["error"] = "Missing parameters"
                     return response
                 response["success"] = True
 
             case "public":
-                pass
+                try:
+                    self.remote_public = data["public"]
+                    CP.get_public(self.remote_public)
+                    response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
+                    if response["status"] == "complete":
+                        response["public"] = self.public
+                except KeyError:
+                    response["error"] = "Missing parameters"
+                    return response
+                response["success"] = True
+
             case _:
-                pass
+                response["error"] = "Invalid request type"
 
         return response
 
@@ -122,6 +142,6 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(remote_ip="127.0.0.1")
+    DH = DiffieHellman(remote_ip="192.168.1.37")
     CP = ControlPanel(DH)
     main()

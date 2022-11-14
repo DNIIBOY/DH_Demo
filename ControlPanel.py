@@ -3,7 +3,7 @@ from time import sleep
 import json
 import threading
 
-UI_STATES = ["select_user", "pick_shared", "pick_private", "show_keys"]
+UI_STATES = ["select_user", "pick_shared", "pick_private", "awaiting_private", "show_keys"]
 with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
 
@@ -51,6 +51,8 @@ class ControlPanel(Tk):
                 self.pick_shared()
             case "pick_private":
                 self.pick_private()
+            case "awaiting_private":
+                self.awaiting_private()
             case "show_keys":
                 self.show_keys()
             case _:
@@ -64,7 +66,7 @@ class ControlPanel(Tk):
         self.DH.start()
         self.state = 1
 
-    def set_shared(self, p: int, g: int):
+    def get_shared(self, p: int, g: int):
         """
         Set the shared values
         """
@@ -80,6 +82,15 @@ class ControlPanel(Tk):
         self.DH.g = g
         self.DH.send_request("shared")
         self.state = 2
+
+    def get_public(self, remote_public: int):
+        """
+        Get the public values
+        """
+        if self.state == "pick_shared":
+            self.state = 3
+        elif self.state == "awaiting_private":
+            self.state = 4
 
     def start(self):
         """
@@ -206,12 +217,21 @@ class ControlPanel(Tk):
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
-        x_label = Label(self, text=f"Private value ({'a' if self.DH.name == 'Alice' else 'b'}):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_entry = Entry(self, width=35, font="Rockwell 14")
         p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
         x_label.place(relx=0.25, rely=0.6, anchor=CENTER)
         x_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
+        self.temp_items.append(sub_title)
+
+    def awaiting_private(self):
+        """
+        Change to the awaiting private value screen
+        """
+        self.clear_temp_items()
+        sub_title = Label(self, text=f"Awaiting private value from {self.DH.other_name}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         self.temp_items.append(sub_title)
 
     def show_keys(self):
