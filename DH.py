@@ -30,7 +30,6 @@ class DiffieHellman:
     def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, remote_public=-1, shared_secret=-1, remote_ip="", remote_port=8080):
         self.port = port
         self._name = name
-        self.other_name = "Alice" if name == "Bob" else "Bob"
         self.g = g
         self.p = p
         self.secret = secret
@@ -58,6 +57,14 @@ class DiffieHellman:
             self.port = 8001
             self.remote_port = 8000
 
+    @property
+    def other_name(self):
+        if self.name.lower() == "alice":
+            return "Bob"
+        elif self.name.lower() == "bob":
+            return "Alice"
+        return ""
+
     def send_request(self, request_type: str) -> bool:
         url = f"http://{self.remote_ip}:{self.remote_port}/"
         data = {"name": self.name}
@@ -67,27 +74,19 @@ class DiffieHellman:
                 data["type"] = "shared"
                 data["g"] = self.g
                 data["p"] = self.p
-                r = requests.post(url, json=data).json()
-                return r["success"]  # Return True, if successful
             case "public":
                 data["type"] = "public"
                 data["public"] = self.public
-                r = requests.post(url, json=data).json()
-                if r["success"]:
-                    if r["status"] == "complete":  # If the remote has already decided on a public key
-                        self.remote_public = r["public"]
-                        CP.get_public(self.remote_public)
-
-                    return True  # Return True, if successful
-
             case _:
                 return False
 
+        r = requests.post(url, json=data).json()
+        return r["success"]  # Return True, if successful
+
     def receive_request(self, data):
-        global main_thread
         response = {"name": self.name, "success": False}
 
-        if data["name"] == self.name:
+        if data["name"].lower() != self.other_name.lower():
             return response
 
         match data["type"]:
@@ -108,6 +107,7 @@ class DiffieHellman:
                     response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
                     if response["status"] == "complete":
                         response["public"] = self.public
+
                 except KeyError:
                     response["error"] = "Missing parameters"
                     return response
@@ -142,6 +142,6 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(remote_ip="192.168.1.37")
+    DH = DiffieHellman(remote_ip="127.0.0.1")
     CP = ControlPanel(DH)
     main()

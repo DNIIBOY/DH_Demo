@@ -88,6 +88,9 @@ class ControlPanel(Tk):
         Get the public values
         """
         if self.state == "pick_shared":
+            remote_public_label = Label(self, text=f"Remote public value: {remote_public}", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+            remote_public_label.place(relx=0.5, rely=0.4, anchor=CENTER)
+            self.temp_items.append(remote_public_label)
             self.state = 3
         elif self.state == "awaiting_private":
             self.state = 4
