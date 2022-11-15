@@ -18,6 +18,8 @@ class ControlPanel(Tk):
         self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self.temp_items = []  # Temporary items to be removed when switching screens
         self.lost_connection_label = Label(self, text="Lost connection to remote user", fg="#fa847f", font="Rockwell 16", bg="#24292e")
+        self.message_canvas = Canvas(self, width=500, height=300, bg="#24292e", highlightthickness=1)
+        self.message_canvas.pack_propagate(False)
 
     @property
     def state(self):
@@ -131,8 +133,17 @@ class ControlPanel(Tk):
         """
         Remove all temporary items from the window
         """
+        self.message_canvas.place_forget()
         for item in self.temp_items:
             item.destroy()
+
+    def send_message(self, message: str):
+        """
+        Send a message to the other client
+        """
+        if self.state == "messaging":
+            self.DH.send_message(message)
+        Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e").pack(anchor=NE, pady=5, padx=5)
 
     def receive_message(self, message: str):
         """
@@ -141,6 +152,7 @@ class ControlPanel(Tk):
         print(f"Received message: {message}")  # Print the message
         if self.state != "messaging" or message is False:
             return
+        Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e").pack(anchor=NW, pady=5, padx=5)
 
     def select_user(self):
         """
@@ -312,8 +324,20 @@ class ControlPanel(Tk):
         """
         self.clear_temp_items()
         sub_title = Label(self, text="Messaging", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
-        message_box = Text(self, height=12, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0")
+        message_input = Entry(self, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0")
+        send_button = Button(
+            self,
+            text="Send",
+            width=10,
+            height=1,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14", command=lambda: self.send_message(message_input.get())
+        )
 
         sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
-        message_box.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.temp_items.extend([sub_title, message_box])
+        self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
+        message_input.place(relx=0.5, rely=0.8, anchor=CENTER)
+        send_button.place(relx=0.5, rely=0.9, anchor=CENTER)
+
+        self.temp_items.extend([sub_title, message_input, send_button])
