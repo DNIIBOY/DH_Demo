@@ -174,7 +174,7 @@ class ControlPanel(Tk):
         """
         self.clear_temp_items()
         sub_title = Label(self, text="Select user", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
-        a_but = Button(
+        a_button = Button(
             self,
             text="Alice",
             width=20,
@@ -184,7 +184,7 @@ class ControlPanel(Tk):
             font="Rockwell 20",
             command=lambda: self.set_selected_user("Alice")
         )
-        b_but = Button(
+        b_button = Button(
             self,
             text="Bob",
             width=20,
@@ -196,10 +196,10 @@ class ControlPanel(Tk):
         )
 
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        a_but.place(relx=0.25, rely=0.5, anchor=CENTER)
-        b_but.place(relx=0.75, rely=0.5, anchor=CENTER)
+        a_button.place(relx=0.25, rely=0.5, anchor=CENTER)
+        b_button.place(relx=0.75, rely=0.5, anchor=CENTER)
 
-        self.temp_items.extend([sub_title, a_but, b_but])
+        self.temp_items.extend([sub_title, a_button, b_button])
 
     def pick_shared(self):
         """
@@ -234,7 +234,7 @@ class ControlPanel(Tk):
             command=lambda: g_entry.insert(0, DEFAULT_VALUES["g"])
         )
 
-        submit_but = Button(
+        submit_button = Button(
             self,
             text="Submit",
             width=9,
@@ -250,8 +250,8 @@ class ControlPanel(Tk):
         g_label.place(relx=0.25, rely=0.6, anchor=CENTER)
         g_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
         g_default.place(relx=0.75, rely=0.66, anchor=CENTER)
-        submit_but.place(relx=0.5, rely=0.8, anchor=CENTER)
-        self.temp_items.extend([sub_title, p_label, p_entry, p_default, g_label, g_entry, g_default, submit_but])
+        submit_button.place(relx=0.5, rely=0.8, anchor=CENTER)
+        self.temp_items.extend([sub_title, p_label, p_entry, p_default, g_label, g_entry, g_default, submit_button])
 
     def pick_secret(self):
         """
@@ -264,7 +264,7 @@ class ControlPanel(Tk):
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_entry = Entry(self, width=35, font="Rockwell 14")
-        submit_but = Button(
+        submit_button = Button(
             self,
             text="Submit",
             width=9,
@@ -278,8 +278,8 @@ class ControlPanel(Tk):
         g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
         x_label.place(relx=0.25, rely=0.6, anchor=CENTER)
         x_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
-        submit_but.place(relx=0.5, rely=0.8, anchor=CENTER)
-        self.temp_items.extend([sub_title, p_label, g_label, x_label, x_entry, submit_but])
+        submit_button.place(relx=0.5, rely=0.8, anchor=CENTER)
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, x_entry, submit_button])
 
     def awaiting_public(self):
         """
@@ -350,7 +350,7 @@ class ControlPanel(Tk):
             font="Rockwell 14",
             command=lambda: self.send_message(message_input.get(), message_input)
         )
-        message_input.bind("<Return>", lambda event: self.send_message(message_input.get(), message_input))
+        message_input.bind("<Return>", lambda: self.send_message(message_input.get(), message_input))
 
         sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
         self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
