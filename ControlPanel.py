@@ -327,6 +327,7 @@ class ControlPanel(Tk):
         """
         self.clear_temp_items()
         sub_title = Label(self, text="Messaging", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        secret_label = Label(self, text=f"Shared secret: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=150)
         message_input = Entry(self, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0", insertbackground="#79c7c0")
         send_button = Button(
             self,
@@ -342,6 +343,7 @@ class ControlPanel(Tk):
 
         sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
         self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
+        secret_label.place(relx=0.12, rely=0.3, anchor=CENTER)
         message_input.place(relx=0.5, rely=0.8, anchor=CENTER)
         send_button.place(relx=0.5, rely=0.9, anchor=CENTER)
 
