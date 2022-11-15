@@ -99,45 +99,47 @@ class DiffieHellman:
         return r["success"]  # Return True, if successful
 
     def receive_request(self, data):
-        print("Received request: ", data)
-        response = {"name": self.name, "success": False}
+        try:
+            print("Received request: ", data)  # Print the received data
+            response = {"name": self.name, "success": False}  # Create a response, success is False by default
 
-        if data["name"].lower() != self.other_name.lower():
+            # Check if the request is from the expected sender, does not help for security, but is nice to have
+            if data["name"].lower() != self.other_name.lower():
+                response["error"] = f"Wrong name, expected {self.other_name}"
+                return response
+
+            match data["type"]:  # Match the type of the request
+                case "shared":  # If the request is for the shared parameters
+                    if "g" not in data or "p" not in data:  # Check if the parameters are present
+                        response["error"] = "Missing parameters"
+                        return response  # Return response, if parameters are missing
+                    self.p = data["p"]  # Set the shared parameters
+                    self.g = data["g"]
+                    CP.get_shared(self.p, self.g)  # Update the control panel
+                    response["success"] = True  # Set success as True
+                case "public":  # If the request contains other party's public key
+                    if "public" not in data:  # Check if the public key is present
+                        response["error"] = "Missing parameters"
+                        return response  # Return response, if public key is missing
+
+                    self.remote_public = data["public"]  # Set the remote public key value
+                    if self.public != -1:  # If we have our own public key, calculate the shared secret
+                        self.calculate_shared_secret()
+                    CP.get_public(self.remote_public)  # Update the control panel with the remote public key
+
+                    # Respond if we are waiting for the other party's public key or if we have both public keys
+                    response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
+                    if response["status"] == "complete":
+                        response["public"] = self.public  # Send our public key, if we have both public keys
+                    response["success"] = True
+                case _:
+                    response["error"] = "Invalid request type, expected 'shared' or 'public'"  # If the request type is invalid
             return response
 
-        match data["type"]:
-            case "shared":
-                try:
-                    self.p = data["p"]
-                    self.g = data["g"]
-                    CP.get_shared(self.p, self.g)
-                except KeyError:
-                    response["error"] = "Missing parameters"
-                    return response
-                response["success"] = True
-
-            case "public":
-                try:
-                    self.remote_public = data["public"]
-
-                    if self.public != -1:
-                        self.calculate_shared_secret()
-
-                    CP.get_public(self.remote_public)
-                    response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
-
-                    if response["status"] == "complete":
-                        response["public"] = self.public
-
-                except KeyError:
-                    response["error"] = "Missing parameters"
-                    return response
-                response["success"] = True
-
-            case _:
-                response["error"] = "Invalid request type"
-
-        return response
+        except:
+            # If an error occurs, return a response with success as False
+            return {"name": self.name, "success": False, "error": "Internal server error"}
+            raise
 
     def start(self):
         server_address = ("", self.port)

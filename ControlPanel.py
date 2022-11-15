@@ -2,24 +2,9 @@ from tkinter import *
 import json
 
 UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys"]
+
 with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
-
-
-class Placeholder:
-    def __init__(self):
-        """Placeholder class for the Diffie-Hellman class"""
-        self.name = ""
-        self.g = -1
-        self.p = -1
-        self.port = 9000
-        self.remote_port = 9001
-
-    @staticmethod
-    def send_request(request_type: str) -> bool:
-        """Placeholder for send_request"""
-        print("Sending request of type ", request_type)
-        return True
 
 
 class ControlPanel(Tk):
@@ -29,7 +14,7 @@ class ControlPanel(Tk):
 
     def __init__(self, DH):
         super().__init__()
-        self.DH = DH
+        self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self._state = UI_STATES[0]  # Current state of the program
         self.temp_items = []  # Temporary items to be removed when switching screens
 
@@ -278,7 +263,8 @@ class ControlPanel(Tk):
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#a65755", font="Rockwell 16", bg="#24292e")
         x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg="#a65755", font="Rockwell 16", bg="#24292e")
-        Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg="#a65755", font="Rockwell 16", bg="#24292e")
+        Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg="#a65755", font="Rockwell 16",
+                        bg="#24292e")
         shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 18", bg="#24292e")
 
         p_label.place(relx=0.50, rely=0.24, anchor=CENTER)
@@ -289,9 +275,3 @@ class ControlPanel(Tk):
         shared_label.place(relx=0.50, rely=0.72, anchor=CENTER)
 
         self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label])
-
-
-if __name__ == '__main__':
-    PH = Placeholder()
-    CP = ControlPanel(PH)
-    CP.start()
