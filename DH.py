@@ -1,4 +1,6 @@
 from ControlPanel import ControlPanel
+from encyption import Encryption
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import requests
@@ -102,6 +104,15 @@ class DiffieHellman:
             return False
         return r["success"]  # Return True, if successful
 
+    def send_message(self, message):
+        print(f"Sending message to {self.other_name}")
+        url = f"http://{self.remote_ip}:{self.remote_port}/"  # URL to send the message to
+        enc = Encryption(self.shared_secret)  # Encryption object
+        msg, tag, nonce = enc.encrypt(message)  # Encrypt the message
+        data = {"name": self.name, "type": "message", "message": msg, "tag": tag, "nonce": nonce}  # Create the data to send
+        r = requests.post(url, json=data).json()  # Send the data
+        return r["success"]  # Return whether the request was successful
+
     def receive_request(self, data):
         try:
             print("Received request: ", data)  # Print the received data
@@ -121,6 +132,7 @@ class DiffieHellman:
                     self.g = data["g"]
                     CP.get_shared(self.p, self.g)  # Update the control panel
                     response["success"] = True  # Set success as True
+
                 case "public":  # If the request contains other party's public key
                     if "public" not in data:  # Check if the public key is present
                         response["error"] = "Missing parameters"
@@ -136,6 +148,16 @@ class DiffieHellman:
                     if response["status"] == "complete":
                         response["public"] = self.public  # Send our public key, if we have both public keys
                     response["success"] = True
+
+                case "message":  # If the request contains a message
+                    if "message" not in data or "tag" not in data or "nonce" not in data:  # Check if all parameters are present
+                        response["error"] = "Missing parameters"
+                        return response  # Return response, if parameters are missing
+                    enc = Encryption(self.shared_secret)  # Create an encryption object
+                    msg = enc.decrypt(data["message"], data["tag"], data["nonce"])  # Decrypt the message
+                    CP.receive_message(msg)  # Update the control panel with the message
+                    response["success"] = True
+
                 case _:
                     response["error"] = "Invalid request type, expected 'shared' or 'public'"  # If the request type is invalid
             return response
@@ -169,6 +191,6 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(remote_ip="127.0.0.1")
+    DH = DiffieHellman(remote_ip="192.168.1.37")
     CP = ControlPanel(DH)
     main()

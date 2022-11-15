@@ -1,7 +1,7 @@
 from tkinter import *
 import json
 
-UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys"]
+UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys", "messaging"]
 
 with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
@@ -14,10 +14,14 @@ class ControlPanel(Tk):
 
     def __init__(self, DH):
         super().__init__()
-        self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self._state = UI_STATES[0]  # Current state of the program
+        self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self.temp_items = []  # Temporary items to be removed when switching screens
         self.lost_connection_label = Label(self, text="Lost connection to remote user", fg="#fa847f", font="Rockwell 16", bg="#24292e")
+
+        self.message_canvas = Canvas(self, width=500, height=300, bg="#24292e", highlightthickness=1)
+        self.message_canvas.pack_propagate(False)
+        self.message_list = []  # List of all currently displayed messages
 
     @property
     def state(self):
@@ -39,6 +43,8 @@ class ControlPanel(Tk):
                 self.awaiting_public()
             case "show_keys":
                 self.show_keys()
+            case "messaging":
+                self.messaging()
             case _:
                 raise ValueError("Invalid state")
 
@@ -129,8 +135,38 @@ class ControlPanel(Tk):
         """
         Remove all temporary items from the window
         """
+        self.message_canvas.place_forget()
         for item in self.temp_items:
             item.destroy()
+
+    def send_message(self, message: str, field: Entry):
+        """
+        Send a message to the other client
+        """
+        if message == "":
+            return
+        if self.state == "messaging":
+            self.DH.send_message(message)
+        self.message_list.append(Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500))
+        self.message_list[-1].pack(anchor=NE, pady=5, padx=5)
+        if len(self.message_list) > 8:
+            self.message_list.pop(0).destroy()  # Remove the oldest message
+        field.delete(0, END)
+
+    def receive_message(self, message: str):
+        """
+        Receive a message from the other client
+        """
+        print(f"Received message: {message}")  # Print the message
+        if self.state != "messaging":
+            return
+        if message is False:  # If we receive a message that could not be decrypted
+            self.message_list.append(Label(self.message_canvas, text="*Invalid Message*", fg="#fa847f", font="Rockwell 16", bg="#24292e", wraplength=500))
+        else:
+            self.message_list.append(Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500))
+        self.message_list[-1].pack(anchor=NW, pady=5, padx=5)
+        if len(self.message_list) > 8:
+            self.message_list.pop(0).destroy()  # Remove the oldest message
 
     def select_user(self):
         """
@@ -276,6 +312,15 @@ class ControlPanel(Tk):
         Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg="#a65755", font="Rockwell 16",
                         bg="#24292e")
         shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 18", bg="#24292e")
+        message_button = Button(
+            self,
+            text="Start messaging",
+            width=15,
+            height=2,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14",
+            command=lambda: setattr(self, "state", "messaging"))
 
         p_label.place(relx=0.50, rely=0.24, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.33, anchor=CENTER)
@@ -283,5 +328,34 @@ class ControlPanel(Tk):
         X_label.place(relx=0.50, rely=0.52, anchor=CENTER)
         Y_label.place(relx=0.50, rely=0.62, anchor=CENTER)
         shared_label.place(relx=0.50, rely=0.72, anchor=CENTER)
+        message_button.place(relx=0.5, rely=0.85, anchor=CENTER)
 
-        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label])
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label, message_button])
+
+    def messaging(self):
+        """
+        A place to message the other client, using AES with the shared secret as key
+        """
+        self.clear_temp_items()
+        sub_title = Label(self, text="Messaging", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        secret_label = Label(self, text=f"Shared secret: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=150)
+        message_input = Entry(self, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0", insertbackground="#79c7c0")
+        send_button = Button(
+            self,
+            text="Send",
+            width=10,
+            height=1,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14",
+            command=lambda: self.send_message(message_input.get(), message_input)
+        )
+        message_input.bind("<Return>", lambda event: self.send_message(message_input.get(), message_input))
+
+        sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
+        self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
+        secret_label.place(relx=0.12, rely=0.3, anchor=CENTER)
+        message_input.place(relx=0.5, rely=0.8, anchor=CENTER)
+        send_button.place(relx=0.5, rely=0.9, anchor=CENTER)
+
+        self.temp_items.extend([sub_title, secret_label, message_input, send_button])
