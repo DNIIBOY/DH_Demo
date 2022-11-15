@@ -95,7 +95,11 @@ class DiffieHellman:
                 return False
 
         print("Sending request: ", data)
-        r = requests.post(url, json=data).json()
+        try:
+            r = requests.post(url, json=data).json()
+        except requests.exceptions.ConnectionError:
+            print("Connection error")
+            return False
         return r["success"]  # Return True, if successful
 
     def receive_request(self, data):
