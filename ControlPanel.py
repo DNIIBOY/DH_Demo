@@ -137,13 +137,16 @@ class ControlPanel(Tk):
         for item in self.temp_items:
             item.destroy()
 
-    def send_message(self, message: str):
+    def send_message(self, message: str, field: Entry):
         """
         Send a message to the other client
         """
+        if message == "":
+            return
         if self.state == "messaging":
             self.DH.send_message(message)
         Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e").pack(anchor=NE, pady=5, padx=5)
+        field.delete(0, END)
 
     def receive_message(self, message: str):
         """
@@ -324,7 +327,7 @@ class ControlPanel(Tk):
         """
         self.clear_temp_items()
         sub_title = Label(self, text="Messaging", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
-        message_input = Entry(self, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0")
+        message_input = Entry(self, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0", insertbackground="#79c7c0")
         send_button = Button(
             self,
             text="Send",
@@ -332,8 +335,10 @@ class ControlPanel(Tk):
             height=1,
             bg="#2f4861",
             fg="#7abdff",
-            font="Rockwell 14", command=lambda: self.send_message(message_input.get())
+            font="Rockwell 14",
+            command=lambda: self.send_message(message_input.get(), message_input)
         )
+        message_input.bind("<Return>", lambda event: self.send_message(message_input.get(), message_input))
 
         sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
         self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
