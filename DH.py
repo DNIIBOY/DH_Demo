@@ -128,7 +128,6 @@ class DiffieHellman:
                     CP.get_public(self.remote_public)
                     response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
 
-
                     if response["status"] == "complete":
                         response["public"] = self.public
 
