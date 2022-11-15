@@ -223,6 +223,7 @@ class ControlPanel(Tk):
 
         g_label = Label(self, text="Shared generator (g):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         g_entry = Entry(self, width=35, font="Rockwell 14")
+        g_entry.bind("<Return>", lambda event: submit_button.invoke())
         g_default = Button(
             self,
             text="Default",
@@ -264,6 +265,7 @@ class ControlPanel(Tk):
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}):", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
         x_entry = Entry(self, width=35, font="Rockwell 14")
+        x_entry.bind("<Return>", lambda event: submit_button.invoke())
         submit_button = Button(
             self,
             text="Submit",
@@ -350,7 +352,7 @@ class ControlPanel(Tk):
             font="Rockwell 14",
             command=lambda: self.send_message(message_input.get(), message_input)
         )
-        message_input.bind("<Return>", lambda: self.send_message(message_input.get(), message_input))
+        message_input.bind("<Return>", lambda event: send_button.invoke())
 
         sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
         self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)

@@ -191,6 +191,6 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(remote_ip="192.168.1.37")
+    DH = DiffieHellman(remote_ip="127.0.0.1")
     CP = ControlPanel(DH)
     main()
