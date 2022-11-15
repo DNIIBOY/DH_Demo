@@ -44,7 +44,7 @@ class Encryption:
 
 
 def main():
-    key = 31
+    key = 15
     enc = Encryption(key)
     ct, tag, nonce = enc.encrypt("Hello World")
     print(ct, tag, nonce)

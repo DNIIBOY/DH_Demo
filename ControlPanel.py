@@ -14,8 +14,8 @@ class ControlPanel(Tk):
 
     def __init__(self, DH):
         super().__init__()
-        self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self._state = UI_STATES[0]  # Current state of the program
+        self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self.temp_items = []  # Temporary items to be removed when switching screens
         self.lost_connection_label = Label(self, text="Lost connection to remote user", fg="#fa847f", font="Rockwell 16", bg="#24292e")
 
@@ -133,6 +133,14 @@ class ControlPanel(Tk):
         """
         for item in self.temp_items:
             item.destroy()
+
+    def receive_message(self, message: str):
+        """
+        Receive a message from the other client
+        """
+        print(f"Received message: {message}")  # Print the message
+        if self.state != "messaging" or message is False:
+            return
 
     def select_user(self):
         """
