@@ -1,7 +1,7 @@
 from tkinter import *
 import json
 
-UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys"]
+UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys", "messaging"]
 
 with open("defaultValues.json", "r") as f:
     DEFAULT_VALUES = json.loads(f.read())
@@ -39,6 +39,8 @@ class ControlPanel(Tk):
                 self.awaiting_public()
             case "show_keys":
                 self.show_keys()
+            case "messaging":
+                self.messaging()
             case _:
                 raise ValueError("Invalid state")
 
@@ -276,6 +278,15 @@ class ControlPanel(Tk):
         Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg="#a65755", font="Rockwell 16",
                         bg="#24292e")
         shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 18", bg="#24292e")
+        message_button = Button(
+            self,
+            text="Start messaging",
+            width=15,
+            height=2,
+            bg="#2f4861",
+            fg="#7abdff",
+            font="Rockwell 14",
+            command=lambda: setattr(self, "state", "messaging"))
 
         p_label.place(relx=0.50, rely=0.24, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.33, anchor=CENTER)
@@ -283,5 +294,18 @@ class ControlPanel(Tk):
         X_label.place(relx=0.50, rely=0.52, anchor=CENTER)
         Y_label.place(relx=0.50, rely=0.62, anchor=CENTER)
         shared_label.place(relx=0.50, rely=0.72, anchor=CENTER)
+        message_button.place(relx=0.5, rely=0.85, anchor=CENTER)
 
-        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label])
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label, message_button])
+
+    def messaging(self):
+        """
+        A place to message the other client, using AES with the shared secret as key
+        """
+        self.clear_temp_items()
+        sub_title = Label(self, text="Messaging", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        message_box = Text(self, height=12, width=50, font="Rockwell 14", bg="#24292e", fg="#79c7c0")
+
+        sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
+        message_box.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.temp_items.extend([sub_title, message_box])
