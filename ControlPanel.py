@@ -275,10 +275,22 @@ class ControlPanel(Tk):
         """
         self.clear_temp_items()
         sub_title = Label(self, text="Keys", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
-        sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
-        shared_label.place(relx=0.5, rely=0.4, anchor=CENTER)
-        self.temp_items.extend([sub_title, shared_label])
+        sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
+        p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg="#a65755", font="Rockwell 16", bg="#24292e")
+        g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg="#a65755", font="Rockwell 16", bg="#24292e")
+        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg="#a65755", font="Rockwell 16", bg="#24292e")
+        Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg="#a65755", font="Rockwell 16", bg="#24292e")
+        shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 18", bg="#24292e")
+
+        p_label.place(relx=0.50, rely=0.24, anchor=CENTER)
+        g_label.place(relx=0.50, rely=0.33, anchor=CENTER)
+        x_label.place(relx=0.50, rely=0.42, anchor=CENTER)
+        X_label.place(relx=0.50, rely=0.52, anchor=CENTER)
+        Y_label.place(relx=0.50, rely=0.62, anchor=CENTER)
+        shared_label.place(relx=0.50, rely=0.72, anchor=CENTER)
+
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label])
 
 
 if __name__ == '__main__':
