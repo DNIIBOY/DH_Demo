@@ -93,6 +93,7 @@ class ControlPanel(Tk):
         if self.DH.remote_public == -1:
             self.state = 3
         else:
+            self.DH.calculate_shared_secret()
             self.state = 4
 
     def get_public(self, remote_public: int):
@@ -275,7 +276,9 @@ class ControlPanel(Tk):
         self.clear_temp_items()
         sub_title = Label(self, text="Keys", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        self.temp_items.append(sub_title)
+        shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg="#79c7c0", font="Rockwell 16", bg="#24292e")
+        shared_label.place(relx=0.5, rely=0.4, anchor=CENTER)
+        self.temp_items.extend([sub_title, shared_label])
 
 
 if __name__ == '__main__':

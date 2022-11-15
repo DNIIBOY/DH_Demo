@@ -73,6 +73,14 @@ class DiffieHellman:
         self.public = pow(self.g, self.secret, self.p)
         return self.public
 
+    def calculate_shared_secret(self) -> int:
+        """
+        Calculates the shared secret, based on the remote public key and the shared parameters
+        :return: The shared secret.
+        """
+        self.shared_secret = pow(self.remote_public, self.secret, self.p)
+        return self.shared_secret
+
     def send_request(self, request_type: str) -> bool:
         url = f"http://{self.remote_ip}:{self.remote_port}/"
         data = {"name": self.name}
@@ -113,8 +121,14 @@ class DiffieHellman:
             case "public":
                 try:
                     self.remote_public = data["public"]
+
+                    if self.public != -1:
+                        self.calculate_shared_secret()
+
                     CP.get_public(self.remote_public)
                     response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
+
+
                     if response["status"] == "complete":
                         response["public"] = self.public
 
