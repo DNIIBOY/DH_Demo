@@ -17,6 +17,7 @@ class ControlPanel(Tk):
         self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self._state = UI_STATES[0]  # Current state of the program
         self.temp_items = []  # Temporary items to be removed when switching screens
+        self.lost_connection_label = Label(self, text="Lost connection to remote user", fg="#fa847f", font="Rockwell 16", bg="#24292e")
 
     @property
     def state(self):
@@ -63,7 +64,11 @@ class ControlPanel(Tk):
         """
         self.DH.p = p
         self.DH.g = g
-        self.DH.send_request("shared")
+        connection = self.DH.send_request("shared")
+        if connection:
+            self.lost_connection_label.place_forget()
+        else:
+            self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
         self.state = 2
 
     def submit_secret(self, secret: int):
@@ -72,7 +77,12 @@ class ControlPanel(Tk):
         """
         self.DH.secret = secret
         self.DH.calculate_public()
-        self.DH.send_request("public")
+        connection = self.DH.send_request("public")
+        if connection:
+            self.lost_connection_label.place_forget()
+        else:
+            self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
+
         if self.DH.remote_public == -1:
             self.state = 3
         else:
