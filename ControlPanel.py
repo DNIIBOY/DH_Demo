@@ -145,7 +145,7 @@ class ControlPanel(Tk):
             return
         if self.state == "messaging":
             self.DH.send_message(message)
-        Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e").pack(anchor=NE, pady=5, padx=5)
+        Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500).pack(anchor=NE, pady=5, padx=5)
         field.delete(0, END)
 
     def receive_message(self, message: str):
@@ -155,7 +155,7 @@ class ControlPanel(Tk):
         print(f"Received message: {message}")  # Print the message
         if self.state != "messaging" or message is False:
             return
-        Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e").pack(anchor=NW, pady=5, padx=5)
+        Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500).pack(anchor=NW, pady=5, padx=5)
 
     def select_user(self):
         """
@@ -347,4 +347,4 @@ class ControlPanel(Tk):
         message_input.place(relx=0.5, rely=0.8, anchor=CENTER)
         send_button.place(relx=0.5, rely=0.9, anchor=CENTER)
 
-        self.temp_items.extend([sub_title, message_input, send_button])
+        self.temp_items.extend([sub_title, secret_label, message_input, send_button])
