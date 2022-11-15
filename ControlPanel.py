@@ -158,9 +158,12 @@ class ControlPanel(Tk):
         Receive a message from the other client
         """
         print(f"Received message: {message}")  # Print the message
-        if self.state != "messaging" or message is False:
+        if self.state != "messaging":
             return
-        self.message_list.append(Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500))
+        if message is False:  # If we receive a message that could not be decrypted
+            self.message_list.append(Label(self.message_canvas, text="*Invalid Message*", fg="#fa847f", font="Rockwell 16", bg="#24292e", wraplength=500))
+        else:
+            self.message_list.append(Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500))
         self.message_list[-1].pack(anchor=NW, pady=5, padx=5)
         if len(self.message_list) > 8:
             self.message_list.pop(0).destroy()  # Remove the oldest message
