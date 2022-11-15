@@ -132,7 +132,7 @@ class DiffieHellman:
                     CP.get_public(self.remote_public)  # Update the control panel with the remote public key
 
                     # Respond if we are waiting for the other party's public key or if we have both public keys
-                    response["status"] = "awaiting" if CP.state == "pick_private" else "complete"
+                    response["status"] = "awaiting" if self.public == -1 else "complete"
                     if response["status"] == "complete":
                         response["public"] = self.public  # Send our public key, if we have both public keys
                     response["success"] = True
