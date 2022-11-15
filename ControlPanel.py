@@ -1,7 +1,5 @@
 from tkinter import *
-from time import sleep
 import json
-import threading
 
 UI_STATES = ["select_user", "pick_shared", "pick_secret", "awaiting_public", "show_keys"]
 with open("defaultValues.json", "r") as f:

@@ -1,9 +1,7 @@
 from ControlPanel import ControlPanel
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
-import os
 import requests
-import sys
 import threading
 
 
