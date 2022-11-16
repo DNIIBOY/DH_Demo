@@ -11,8 +11,13 @@ class Encryption:
         return self._key
 
     @key.setter
-    def key(self, value):
-        self._key = value.to_bytes(16, "little")
+    def key(self, value: int):
+        if value <= 2 ** 15:
+            self._key = value.to_bytes(16, "big")
+        elif value <= 2 ** 23:
+            self._key = value.to_bytes(24, "big")
+        else:
+            self._key = value.to_bytes(32, "big")
 
     def encrypt(self, plaintext: str) -> tuple[str, str, str]:
         """
