@@ -12,9 +12,9 @@ class Encryption:
 
     @key.setter
     def key(self, value: int):
-        if value <= 2 ** 15:
+        if value < 2 ** (16*8):
             self._key = value.to_bytes(16, "big")
-        elif value <= 2 ** 23:
+        elif value < 2 ** (24*8):
             self._key = value.to_bytes(24, "big")
         else:
             self._key = value.to_bytes(32, "big")
