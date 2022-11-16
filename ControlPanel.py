@@ -146,7 +146,11 @@ class ControlPanel(Tk):
         if message == "":
             return
         if self.state == "messaging":
-            self.DH.send_message(message)
+            connection = self.DH.send_message(message)
+            if connection:
+                self.lost_connection_label.place_forget()
+            else:
+                self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
         self.message_list.append(Label(self.message_canvas, text=message, fg="#79c7c0", font="Rockwell 16", bg="#24292e", wraplength=500))
         self.message_list[-1].pack(anchor=NE, pady=5, padx=5)
         if len(self.message_list) > 8:

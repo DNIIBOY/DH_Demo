@@ -110,8 +110,12 @@ class DiffieHellman:
         enc = Encryption(self.shared_secret)  # Encryption object
         msg, tag, nonce = enc.encrypt(message)  # Encrypt the message
         data = {"name": self.name, "type": "message", "message": msg, "tag": tag, "nonce": nonce}  # Create the data to send
-        r = requests.post(url, json=data).json()  # Send the data
-        return r["success"]  # Return whether the request was successful
+        try:
+            r = requests.post(url, json=data).json()  # Send the data
+            return r["success"]  # Return whether the request was successful
+        except requests.exceptions.ConnectionError:
+            print("Connection error")
+            return False
 
     def receive_request(self, data):
         try:
