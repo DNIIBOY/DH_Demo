@@ -455,7 +455,6 @@ class ControlPanel(Tk):
         self.value_canvas.create_line(0, 236, 900, 236, fill=COLORS["success"], width=2)
         self.value_canvas.create_line(0, 286, 900, 286, fill=COLORS["success"], width=2)
         self.temp_items.extend([sub_title, p_label, g_label, Y_label, Y_value, X_label, X_value, x_label, x_value, key_label, key_value, self.value_canvas, message_button])
-        self.lost_connection_label.place(relx=0.5, rely=0.95, anchor=CENTER)
 
     def messaging(self):
         """
