@@ -84,7 +84,7 @@ class ControlPanel(Tk):
         if connection:
             self.lost_connection_label.place_forget()
         else:
-            self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
+            self.lost_connection_label.place(relx=0.5, rely=0.95, anchor=CENTER)
         self.state = 2
 
     def submit_secret(self, secret: int):
@@ -224,10 +224,18 @@ class ControlPanel(Tk):
         Change to the shared values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Select shared values", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
-        sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        p_label = Label(self, text="Shared prime (p):", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        p_entry = Entry(self, width=35, font="Rockwell 14")
+        sub_title = Label(self, text=f"Select shared values", fg=COLORS["text"], font="Rockwell 24", bg=COLORS["background"])
+        sub_title.place(relx=0.5, rely=0.17, anchor=CENTER)
+        p_label = Label(self, text="Shared prime (p)", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
+        p_entry = Entry(
+            self,
+            width=33,
+            font="Rockwell 20",
+            bg=COLORS["accent"],
+            fg=COLORS["text"],
+            insertbackground=COLORS["text"],
+            borderwidth=0
+        )
         p_default = Button(
             self,
             text="Default",
@@ -236,11 +244,20 @@ class ControlPanel(Tk):
             bg=COLORS["accent"],
             fg=COLORS["text"],
             font="Rockwell 14",
+            borderwidth=0,
             command=lambda: p_entry.insert(0, DEFAULT_VALUES["p"])
         )
 
-        g_label = Label(self, text="Shared generator (g):", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        g_entry = Entry(self, width=35, font="Rockwell 14")
+        g_label = Label(self, text="Shared generator (g)", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
+        g_entry = Entry(
+            self,
+            width=33,
+            font="Rockwell 20",
+            bg=COLORS["accent"],
+            fg=COLORS["text"],
+            insertbackground=COLORS["text"],
+            borderwidth=0
+        )
         g_entry.bind("<Return>", lambda event: submit_button.invoke())
         g_default = Button(
             self,
@@ -250,25 +267,27 @@ class ControlPanel(Tk):
             bg=COLORS["accent"],
             fg=COLORS["text"],
             font="Rockwell 14",
+            borderwidth=0,
             command=lambda: g_entry.insert(0, DEFAULT_VALUES["g"])
         )
 
         submit_button = Button(
             self,
-            text="Submit",
+            text="Send",
             width=9,
-            height=2,
+            height=1,
             bg=COLORS["accent"],
-            fg=COLORS["text"], font="Rockwell 14",
+            fg=COLORS["text"], font="Rockwell 25",
+            borderwidth=0,
             command=lambda: self.submit_shared(int(p_entry.get()), int(g_entry.get()))
         )
 
-        p_label.place(relx=0.25, rely=0.4, anchor=CENTER)
-        p_entry.place(relx=0.75, rely=0.4, anchor=CENTER)
-        p_default.place(relx=0.75, rely=0.46, anchor=CENTER)
-        g_label.place(relx=0.25, rely=0.6, anchor=CENTER)
-        g_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
-        g_default.place(relx=0.75, rely=0.66, anchor=CENTER)
+        p_label.place(relx=0.05, rely=0.4, anchor=W)
+        p_entry.place(relx=0.55, rely=0.4, anchor=CENTER)
+        p_default.place(relx=0.88, rely=0.4, anchor=CENTER)
+        g_label.place(relx=0.05, rely=0.6, anchor=W)
+        g_entry.place(relx=0.55, rely=0.6, anchor=CENTER)
+        g_default.place(relx=0.88, rely=0.6, anchor=CENTER)
         submit_button.place(relx=0.5, rely=0.8, anchor=CENTER)
         self.temp_items.extend([sub_title, p_label, p_entry, p_default, g_label, g_entry, g_default, submit_button])
 
