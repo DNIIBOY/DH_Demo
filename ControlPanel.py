@@ -371,20 +371,34 @@ class ControlPanel(Tk):
         Change to the awaiting public value screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Awaiting public value from {self.DH.remote_name}", fg=COLORS["text"], font="Rockwell 20",
+        sub_title = Label(self, text=f"Awaiting public key from {self.DH.remote_name}", fg=COLORS["text"], font="Rockwell 24",
                           bg=COLORS["background"])
-        sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg=COLORS["text"], font="Rockwell 16",
+        sub_title.place(relx=0.5, rely=0.17, anchor=CENTER)
+        self.value_canvas = Canvas(self, width=750, height=250, bg=COLORS["background"], highlightthickness=0)
+        self.value_canvas.place(relx=0.04, rely=0.52, anchor=W)
+        p_label = Label(self.value_canvas, text=f"Shared prime (p)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        p_value = Label(self.value_canvas, text=self.DH.p, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        g_label = Label(self.value_canvas, text=f"Shared generator (g)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        g_value = Label(self.value_canvas, text=self.DH.g, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        x_label = Label(self.value_canvas, text=f"Private key ({self.DH.name[0].lower()})", fg=COLORS["text"], font="Rockwell 20",
                         bg=COLORS["background"])
-        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16",
+        x_value = Label(self.value_canvas, text=self.DH.secret, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        X_label = Label(self.value_canvas, text=f"Public key ({self.DH.name[0].upper()})", fg=COLORS["text"], font="Rockwell 20",
                         bg=COLORS["background"])
-        p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
-        g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
-        x_label.place(relx=0.50, rely=0.5, anchor=CENTER)
-        X_label.place(relx=0.50, rely=0.6, anchor=CENTER)
-        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label])
+        X_value = Label(self.value_canvas, text=self.DH.public, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        p_label.place(relx=0, rely=0.1, anchor=W)
+        p_value.place(relx=0.4, rely=0.1, anchor=W)
+        g_label.place(relx=0, rely=0.3, anchor=W)
+        g_value.place(relx=0.4, rely=0.3, anchor=W)
+        x_label.place(relx=0, rely=0.5, anchor=W)
+        x_value.place(relx=0.4, rely=0.5, anchor=W)
+        X_label.place(relx=0, rely=0.7, anchor=W)
+        X_value.place(relx=0.4, rely=0.7, anchor=W)
+        self.value_canvas.create_line(0, 45, 900, 45, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 95, 900, 95, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 150, 900, 150, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 200, 900, 200, fill=COLORS["accent"], width=2)
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, x_value, X_label, X_value, self.value_canvas])
 
     def show_keys(self):
         """
