@@ -136,7 +136,7 @@ class ControlPanel(Tk):
             background=COLORS["background"]
         )
 
-        title = Label(self, text="Diffie-Hellman", fg=COLORS["text"], font="Rockwell 30", bg=COLORS["background"])
+        title = Label(self, text="Diffie-Hellman", font="Rockwell 40", fg=COLORS["text"], bg=COLORS["background"])
         title.pack(pady=10)
 
     def clear_temp_items(self):
@@ -159,7 +159,7 @@ class ControlPanel(Tk):
                 self.lost_connection_label.place_forget()
             else:
                 self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
-        self.message_list.append(Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg="#24292e", wraplength=500))
+        self.message_list.append(Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
         self.message_list[-1].pack(anchor=NE, pady=5, padx=5)
         if len(self.message_list) > 8:
             self.message_list.pop(0).destroy()  # Remove the oldest message
@@ -186,31 +186,31 @@ class ControlPanel(Tk):
         Change to the user selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text="Select user", fg="#79c7c0", font="Rockwell 20", bg="#24292e")
+        sub_title = Label(self, text="Select user", fg=COLORS["text"], font="Rockwell 23", bg=COLORS["background"])
         a_button = Button(
             self,
             text="Alice",
-            width=20,
-            height=5,
+            width=10,
+            height=2,
             bg=COLORS["accent"],
             fg=COLORS["text"],
             borderwidth=0,
-            font="Rockwell 20",
+            font="Rockwell 45",
             command=lambda: self.set_selected_user("Alice")
         )
         b_button = Button(
             self,
             text="Bob",
-            width=20,
-            height=5,
+            width=10,
+            height=2,
             bg=COLORS["accent"],
             fg=COLORS["text"],
             borderwidth=0,
-            font="Rockwell 20",
+            font="Rockwell 45",
             command=lambda: self.set_selected_user("Bob")
         )
 
-        sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
+        sub_title.place(relx=0.5, rely=0.17, anchor=CENTER)
         a_button.place(relx=0.25, rely=0.5, anchor=CENTER)
         b_button.place(relx=0.75, rely=0.5, anchor=CENTER)
 
