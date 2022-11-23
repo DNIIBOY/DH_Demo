@@ -1,6 +1,7 @@
 {
   "background": "#202225",
   "accent": "#36393F",
+  "accent2": "#2A2D31",
   "text": "#FFFFFF",
   "error": "#ED4245",
   "success": "#46C46E"

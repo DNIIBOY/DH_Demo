@@ -30,7 +30,14 @@ class ControlPanel(Tk):
         )
         self.value_canvas = None  # Canvas that will display all values
 
-        self.message_canvas = Canvas(self, width=500, height=300, bg=COLORS["accent"], highlightthickness=1)  # Canvas for the messaging screen
+        self.message_canvas = Canvas(  # Canvas for the messaging screen
+            self,
+            width=500,
+            height=350,
+            bg=COLORS["accent2"],
+            highlightthickness=4,
+            highlightbackground=COLORS["accent"]
+        )
         self.message_canvas.pack_propagate(False)  # Don't allow the canvas to change size
         self.message_list = []  # List of all currently displayed messages
 
@@ -181,9 +188,10 @@ class ControlPanel(Tk):
                 self.lost_connection_label.place_forget()
             else:
                 self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
-        self.message_list.append(Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
+        self.message_list.append(
+            Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
         self.message_list[-1].pack(anchor=NE, pady=5, padx=5)
-        if len(self.message_list) > 8:
+        if len(self.message_list) > 9:
             self.message_list.pop(0).destroy()  # Remove the oldest message
         field.delete(0, END)
 
@@ -196,10 +204,10 @@ class ControlPanel(Tk):
             return
         if message is False:  # If we receive a message that could not be decrypted
             self.message_list.append(
-                Label(self.message_canvas, text="*Invalid Message*", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
+                Label(self.message_canvas, text="*Invalid Message*", fg=COLORS["error"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
         else:
             self.message_list.append(
-                Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
+                Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
         self.message_list[-1].pack(anchor=NW, pady=5, padx=5)
         if len(self.message_list) > 8:
             self.message_list.pop(0).destroy()  # Remove the oldest message
@@ -454,7 +462,9 @@ class ControlPanel(Tk):
         self.value_canvas.create_line(0, 186, 900, 186, fill=COLORS["accent"], width=2)
         self.value_canvas.create_line(0, 236, 900, 236, fill=COLORS["success"], width=2)
         self.value_canvas.create_line(0, 286, 900, 286, fill=COLORS["success"], width=2)
-        self.temp_items.extend([sub_title, p_label, g_label, Y_label, Y_value, X_label, X_value, x_label, x_value, key_label, key_value, self.value_canvas, message_button])
+        self.temp_items.extend(
+            [sub_title, p_label, g_label, Y_label, Y_value, X_label, X_value, x_label, x_value, key_label, key_value, self.value_canvas,
+             message_button])
 
     def messaging(self):
         """
@@ -462,28 +472,26 @@ class ControlPanel(Tk):
         """
         self.clear_temp_items()
         sub_title = Label(self, text="Messaging", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
-        secret_label = Label(self, text=f"Shared secret: {self.DH.shared_secret}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"],
+        secret_label = Label(self, text=f"Shared key (K) {self.DH.shared_secret}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"],
                              wraplength=150)
-        message_input = Entry(self, width=50, font="Rockwell 14", fg=COLORS["text"], bg=COLORS["background"], insertbackground=COLORS["text"])
-        send_button = Button(
+        message_input = Entry(
             self,
-            text="Send",
-            width=10,
-            height=1,
+            width=45,
+            font="Rockwell 15",
             fg=COLORS["text"],
             bg=COLORS["accent"],
-            font="Rockwell 14",
-            command=lambda: self.send_message(message_input.get(), message_input)
+            insertbackground=COLORS["text"],
+            borderwidth=0
         )
-        message_input.bind("<Return>", lambda event: send_button.invoke())
+        message_input.config(highlightbackground=COLORS["accent"], highlightcolor=COLORS["accent"], highlightthickness=6)
+        message_input.bind("<Return>", lambda event: self.send_message((message_input.get()), message_input))
 
         sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
-        self.message_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
-        secret_label.place(relx=0.12, rely=0.3, anchor=CENTER)
-        message_input.place(relx=0.5, rely=0.8, anchor=CENTER)
-        send_button.place(relx=0.5, rely=0.9, anchor=CENTER)
+        self.message_canvas.place(relx=0.5, rely=0.2, anchor=N)
+        secret_label.place(relx=0.12, rely=0.25, anchor=CENTER)
+        message_input.place(relx=0.5, rely=0.92, anchor=CENTER)
 
-        self.temp_items.extend([sub_title, secret_label, message_input, send_button])
+        self.temp_items.extend([sub_title, secret_label, message_input])
 
 
 def ints_only(string):
