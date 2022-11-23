@@ -405,37 +405,57 @@ class ControlPanel(Tk):
         Change to the keys screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text="Keys", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
-        sub_title.place(relx=0.5, rely=0.15, anchor=CENTER)
-        p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg=COLORS["text"], font="Rockwell 16",
+        sub_title = Label(self, text="Keys", fg=COLORS["text"], font="Rockwell 24", bg=COLORS["background"])
+        sub_title.place(relx=0.5, rely=0.17, anchor=CENTER)
+        self.value_canvas = Canvas(self, width=750, height=300, bg=COLORS["background"], highlightthickness=0)
+        self.value_canvas.place(relx=0.04, rely=0.21, anchor=NW)
+        p_label = Label(self.value_canvas, text=f"Shared prime (p)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        p_value = Label(self.value_canvas, text=self.DH.p, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        g_label = Label(self.value_canvas, text=f"Shared generator (g)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        g_value = Label(self.value_canvas, text=self.DH.g, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        X_label = Label(self.value_canvas, text=f"Public key ({self.DH.name[0].upper()})", fg=COLORS["text"], font="Rockwell 20",
                         bg=COLORS["background"])
-        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16",
+        X_value = Label(self.value_canvas, text=self.DH.public, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        Y_label = Label(self.value_canvas, text=f"Remote public key ({self.DH.remote_name[0].upper()})", fg=COLORS["text"], font="Rockwell 20",
                         bg=COLORS["background"])
-        Y_label = Label(self, text=f"Public value ({self.DH.remote_name[0].upper()}): {self.DH.remote_public}", fg=COLORS["text"], font="Rockwell 16",
+        Y_value = Label(self.value_canvas, text=self.DH.remote_public, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        x_label = Label(self.value_canvas, text=f"Private key ({self.DH.name[0].lower()})", fg=COLORS["text"], font="Rockwell 20",
                         bg=COLORS["background"])
-        shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg=COLORS["text"], font="Rockwell 18", bg=COLORS["background"])
+        x_value = Label(self.value_canvas, text=self.DH.secret, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        key_label = Label(self.value_canvas, text=f"Shared secret key (K)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        key_value = Label(self.value_canvas, text=self.DH.shared_secret, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
         message_button = Button(
             self,
             text="Start messaging",
             width=15,
-            height=2,
+            height=1,
             bg=COLORS["accent"],
             fg=COLORS["text"],
             font="Rockwell 14",
+            borderwidth=0,
             command=lambda: setattr(self, "state", "messaging")
         )
-
-        p_label.place(relx=0.50, rely=0.24, anchor=CENTER)
-        g_label.place(relx=0.50, rely=0.33, anchor=CENTER)
-        x_label.place(relx=0.50, rely=0.42, anchor=CENTER)
-        X_label.place(relx=0.50, rely=0.52, anchor=CENTER)
-        Y_label.place(relx=0.50, rely=0.62, anchor=CENTER)
-        shared_label.place(relx=0.50, rely=0.72, anchor=CENTER)
-        message_button.place(relx=0.5, rely=0.85, anchor=CENTER)
-
-        self.temp_items.extend([sub_title, p_label, g_label, x_label, X_label, Y_label, shared_label, message_button])
+        p_label.place(relx=0, rely=0, anchor=NW)
+        p_value.place(relx=0.4, rely=0, anchor=NW)
+        g_label.place(relx=0, rely=0.16, anchor=NW)
+        g_value.place(relx=0.4, rely=0.16, anchor=NW)
+        Y_label.place(relx=0, rely=0.32, anchor=NW)
+        Y_value.place(relx=0.4, rely=0.32, anchor=NW)
+        X_label.place(relx=0, rely=0.48, anchor=NW)
+        X_value.place(relx=0.4, rely=0.48, anchor=NW)
+        x_label.place(relx=0, rely=0.64, anchor=NW)
+        x_value.place(relx=0.4, rely=0.64, anchor=NW)
+        key_label.place(relx=0, rely=0.81, anchor=NW)
+        key_value.place(relx=0.4, rely=0.81, anchor=NW)
+        message_button.place(relx=0.5, rely=0.87, anchor=CENTER)
+        self.value_canvas.create_line(0, 38, 900, 38, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 86, 900, 86, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 136, 900, 136, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 186, 900, 186, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 236, 900, 236, fill=COLORS["success"], width=2)
+        self.value_canvas.create_line(0, 286, 900, 286, fill=COLORS["success"], width=2)
+        self.temp_items.extend([sub_title, p_label, g_label, Y_label, Y_value, X_label, X_value, x_label, x_value, key_label, key_value, self.value_canvas, message_button])
+        self.lost_connection_label.place(relx=0.5, rely=0.95, anchor=CENTER)
 
     def messaging(self):
         """
