@@ -58,7 +58,7 @@ class DiffieHellman:
             self.remote_port = 8000
 
     @property
-    def other_name(self):
+    def remote_name(self):
         if self.name.lower() == "alice":
             return "Bob"
         elif self.name.lower() == "bob":
@@ -105,7 +105,7 @@ class DiffieHellman:
         return r["success"]  # Return True, if successful
 
     def send_message(self, message):
-        print(f"Sending message to {self.other_name}")
+        print(f"Sending message to {self.remote_name}")
         url = f"http://{self.remote_ip}:{self.remote_port}/"  # URL to send the message to
         enc = Encryption(self.shared_secret)  # Encryption object
         msg, tag, nonce = enc.encrypt(message)  # Encrypt the message
@@ -123,8 +123,8 @@ class DiffieHellman:
             response = {"name": self.name, "success": False}  # Create a response, success is False by default
 
             # Check if the request is from the expected sender, does not help for security, but is nice to have
-            if data["name"].lower() != self.other_name.lower():
-                response["error"] = f"Wrong name, expected {self.other_name}"
+            if data["name"].lower() != self.remote_name.lower():
+                response["error"] = f"Wrong name, expected {self.remote_name}"
                 return response
 
             match data["type"]:  # Match the type of the request

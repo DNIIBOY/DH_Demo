@@ -20,16 +20,18 @@ class ControlPanel(Tk):
         self._state = UI_STATES[0]  # Current state of the program
         self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self.temp_items = []  # Temporary items to be removed when switching screens
-        self.name_label = Label(self, text="", fg=COLORS["text"], font="Rockwell 22", bg=COLORS["background"])
-        self.lost_connection_label = Label(self,
-                                           text="Lost connection to remote user",
-                                           font="Rockwell 16",
-                                           fg=COLORS["error"],
-                                           bg=COLORS["background"]
-                                           )
+        self.name_label = Label(self, text="", fg=COLORS["text"], font="Rockwell 22", bg=COLORS["background"])  # Label for the name of the user
+        self.lost_connection_label = Label(  # Label for when the connection is lost
+            self,
+            text="Lost connection to remote user",
+            font="Rockwell 16",
+            fg=COLORS["error"],
+            bg=COLORS["background"]
+        )
+        self.value_canvas = None  # Canvas that will display all values
 
-        self.message_canvas = Canvas(self, width=500, height=300, bg=COLORS["accent"], highlightthickness=1)
-        self.message_canvas.pack_propagate(False)
+        self.message_canvas = Canvas(self, width=500, height=300, bg=COLORS["accent"], highlightthickness=1)  # Canvas for the messaging screen
+        self.message_canvas.pack_propagate(False)  # Don't allow the canvas to change size
         self.message_list = []  # List of all currently displayed messages
 
     @property
@@ -70,6 +72,7 @@ class ControlPanel(Tk):
         """
         Set the shared values
         """
+        self.lost_connection_label.place_forget()  # Remove the lost connection label
         self.DH.p = p
         self.DH.g = g
         self.state = 2
@@ -110,11 +113,26 @@ class ControlPanel(Tk):
         Get the public values
         """
         print("Got public value: ", remote_public)
+        self.lost_connection_label.place_forget()  # Remove the lost connection label
         if self.state == "pick_secret":
-            remote_public_label = Label(self, text=f"Remote public value: {remote_public}", fg=COLORS["text"], font="Rockwell 16",
-                                        bg=COLORS["accent"])
-            remote_public_label.place(relx=0.5, rely=0.5, anchor=CENTER)
-            self.temp_items.append(remote_public_label)
+            remote_public_label = Label(
+                self.value_canvas,
+                text=f"Remote public key ({self.DH.remote_name[0].upper()})",
+                font="Rockwell 20",
+                fg=COLORS["text"],
+                bg=COLORS["background"]
+            )
+            remote_public_value = Label(
+                self.value_canvas,
+                text=remote_public,
+                font="Rockwell 20",
+                fg=COLORS["text"],
+                bg=COLORS["background"]
+            )
+            remote_public_label.place(relx=0, rely=0.7, anchor=W)
+            remote_public_value.place(relx=0.407, rely=0.7, anchor=W)
+            self.value_canvas.create_line(0, 200, 900, 200, fill=COLORS["accent"], width=2)
+            self.temp_items.extend([remote_public_label, remote_public_value])
         elif self.state == "awaiting_public":
             self.state = 4
 
@@ -303,36 +321,57 @@ class ControlPanel(Tk):
         Change to the secret values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Select personal secret value", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
-        sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
-        p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}):", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
-        x_entry = Entry(self, width=35, font="Rockwell 14")
+        validation = self.register(ints_only)  # Only allow ints as input
+        sub_title = Label(self, text=f"Select private value", fg=COLORS["text"], font="Rockwell 24", bg=COLORS["background"])
+        sub_title.place(relx=0.5, rely=0.17, anchor=CENTER)
+        self.value_canvas = Canvas(self, width=750, height=250, bg=COLORS["background"], highlightthickness=0)
+        self.value_canvas.place(relx=0.04, rely=0.52, anchor=W)
+        p_label = Label(self.value_canvas, text=f"Shared prime (p)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        p_value = Label(self.value_canvas, text=self.DH.p, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        g_label = Label(self.value_canvas, text=f"Shared generator (g)", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        g_value = Label(self.value_canvas, text=self.DH.g, fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        x_label = Label(self.value_canvas, text=f"Private value ({self.DH.name[0].lower()})", fg=COLORS["text"], font="Rockwell 20",
+                        bg=COLORS["background"])
+        x_entry = Entry(
+            self.value_canvas,
+            width=35,
+            font="Rockwell 20",
+            bg=COLORS["accent"],
+            fg=COLORS["text"],
+            insertbackground=COLORS["text"],
+            borderwidth=0,
+            validate="key",
+            validatecommand=(validation, "%P")
+        )
         x_entry.bind("<Return>", lambda event: submit_button.invoke())
         submit_button = Button(
             self,
-            text="Submit",
+            text="Send",
             width=9,
-            height=2,
+            height=1,
             bg=COLORS["accent"],
-            fg=COLORS["text"],
-            font="Rockwell 14",
+            fg=COLORS["text"], font="Rockwell 25",
+            borderwidth=0,
             command=lambda: self.submit_secret(int(x_entry.get()))
         )
-        p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
-        g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
-        x_label.place(relx=0.25, rely=0.6, anchor=CENTER)
-        x_entry.place(relx=0.75, rely=0.6, anchor=CENTER)
+        p_label.place(relx=0, rely=0.1, anchor=W)
+        p_value.place(relx=0.4, rely=0.1, anchor=W)
+        g_label.place(relx=0, rely=0.3, anchor=W)
+        g_value.place(relx=0.4, rely=0.3, anchor=W)
+        x_label.place(relx=0, rely=0.5, anchor=W)
+        x_entry.place(relx=0.407, rely=0.5, anchor=W)
+        self.value_canvas.create_line(0, 45, 900, 45, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 95, 900, 95, fill=COLORS["accent"], width=2)
+        self.value_canvas.create_line(0, 150, 900, 150, fill=COLORS["accent"], width=2)
         submit_button.place(relx=0.5, rely=0.8, anchor=CENTER)
-        self.temp_items.extend([sub_title, p_label, g_label, x_label, x_entry, submit_button])
+        self.temp_items.extend([sub_title, p_label, g_label, x_label, x_entry, self.value_canvas, submit_button])
 
     def awaiting_public(self):
         """
         Change to the awaiting public value screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Awaiting public value from {self.DH.other_name}", fg=COLORS["text"], font="Rockwell 20",
+        sub_title = Label(self, text=f"Awaiting public value from {self.DH.remote_name}", fg=COLORS["text"], font="Rockwell 20",
                           bg=COLORS["background"])
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
@@ -360,7 +399,7 @@ class ControlPanel(Tk):
                         bg=COLORS["background"])
         X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16",
                         bg=COLORS["background"])
-        Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg=COLORS["text"], font="Rockwell 16",
+        Y_label = Label(self, text=f"Public value ({self.DH.remote_name[0].upper()}): {self.DH.remote_public}", fg=COLORS["text"], font="Rockwell 16",
                         bg=COLORS["background"])
         shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg=COLORS["text"], font="Rockwell 18", bg=COLORS["background"])
         message_button = Button(
@@ -371,7 +410,8 @@ class ControlPanel(Tk):
             bg=COLORS["accent"],
             fg=COLORS["text"],
             font="Rockwell 14",
-            command=lambda: setattr(self, "state", "messaging"))
+            command=lambda: setattr(self, "state", "messaging")
+        )
 
         p_label.place(relx=0.50, rely=0.24, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.33, anchor=CENTER)
