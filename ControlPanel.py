@@ -20,6 +20,7 @@ class ControlPanel(Tk):
         self._state = UI_STATES[0]  # Current state of the program
         self.DH = DH  # The Diffie-Hellman object, used to get/set values
         self.temp_items = []  # Temporary items to be removed when switching screens
+        self.name_label = Label(self, text="", fg=COLORS["text"], font="Rockwell 22", bg=COLORS["background"])
         self.lost_connection_label = Label(self,
                                            text="Lost connection to remote user",
                                            font="Rockwell 16",
@@ -60,6 +61,7 @@ class ControlPanel(Tk):
         """
         Set the selected user, and start receiving requests
         """
+        self.name_label.config(text=user)
         self.DH.name = user
         self.DH.start()
         self.state = 1
@@ -138,6 +140,7 @@ class ControlPanel(Tk):
 
         title = Label(self, text="Diffie-Hellman", font="Rockwell 40", fg=COLORS["text"], bg=COLORS["background"])
         title.pack(pady=10)
+        self.name_label.place(relx=0.88, rely=0.1, anchor=CENTER)
 
     def clear_temp_items(self):
         """
@@ -221,7 +224,7 @@ class ControlPanel(Tk):
         Change to the shared values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Select shared values - {self.DH.name}", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        sub_title = Label(self, text=f"Select shared values", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text="Shared prime (p):", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
         p_entry = Entry(self, width=35, font="Rockwell 14")
@@ -274,7 +277,7 @@ class ControlPanel(Tk):
         Change to the secret values selection screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Select personal secret value - {self.DH.name}", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        sub_title = Label(self, text=f"Select personal secret value", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
