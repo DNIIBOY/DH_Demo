@@ -111,7 +111,8 @@ class ControlPanel(Tk):
         """
         print("Got public value: ", remote_public)
         if self.state == "pick_secret":
-            remote_public_label = Label(self, text=f"Remote public value: {remote_public}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"])
+            remote_public_label = Label(self, text=f"Remote public value: {remote_public}", fg=COLORS["text"], font="Rockwell 16",
+                                        bg=COLORS["accent"])
             remote_public_label.place(relx=0.5, rely=0.5, anchor=CENTER)
             self.temp_items.append(remote_public_label)
         elif self.state == "awaiting_public":
@@ -179,7 +180,8 @@ class ControlPanel(Tk):
             self.message_list.append(
                 Label(self.message_canvas, text="*Invalid Message*", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
         else:
-            self.message_list.append(Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
+            self.message_list.append(
+                Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent"], wraplength=500))
         self.message_list[-1].pack(anchor=NW, pady=5, padx=5)
         if len(self.message_list) > 8:
             self.message_list.pop(0).destroy()  # Remove the oldest message
@@ -224,6 +226,7 @@ class ControlPanel(Tk):
         Change to the shared values selection screen
         """
         self.clear_temp_items()
+        validation = self.register(ints_only)  # Only allow ints as input
         sub_title = Label(self, text=f"Select shared values", fg=COLORS["text"], font="Rockwell 24", bg=COLORS["background"])
         sub_title.place(relx=0.5, rely=0.17, anchor=CENTER)
         p_label = Label(self, text="Shared prime (p)", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
@@ -234,7 +237,9 @@ class ControlPanel(Tk):
             bg=COLORS["accent"],
             fg=COLORS["text"],
             insertbackground=COLORS["text"],
-            borderwidth=0
+            borderwidth=0,
+            validate="key",
+            validatecommand=(validation, "%P")
         )
         p_default = Button(
             self,
@@ -245,7 +250,7 @@ class ControlPanel(Tk):
             fg=COLORS["text"],
             font="Rockwell 14",
             borderwidth=0,
-            command=lambda: p_entry.insert(0, DEFAULT_VALUES["p"])
+            command=lambda: (p_entry.delete(0, END), p_entry.insert(0, DEFAULT_VALUES["p"]))  # Clear the entry and insert the default value
         )
 
         g_label = Label(self, text="Shared generator (g)", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
@@ -256,7 +261,9 @@ class ControlPanel(Tk):
             bg=COLORS["accent"],
             fg=COLORS["text"],
             insertbackground=COLORS["text"],
-            borderwidth=0
+            borderwidth=0,
+            validate="key",
+            validatecommand=(validation, "%P")
         )
         g_entry.bind("<Return>", lambda event: submit_button.invoke())
         g_default = Button(
@@ -268,7 +275,7 @@ class ControlPanel(Tk):
             fg=COLORS["text"],
             font="Rockwell 14",
             borderwidth=0,
-            command=lambda: g_entry.insert(0, DEFAULT_VALUES["g"])
+            command=lambda: (g_entry.delete(0, END), g_entry.insert(0, DEFAULT_VALUES["g"]))  # Clear the entry and insert the default value
         )
 
         submit_button = Button(
@@ -325,13 +332,15 @@ class ControlPanel(Tk):
         Change to the awaiting public value screen
         """
         self.clear_temp_items()
-        sub_title = Label(self, text=f"Awaiting public value from {self.DH.other_name}", fg=COLORS["text"], font="Rockwell 20", bg=COLORS["background"])
+        sub_title = Label(self, text=f"Awaiting public value from {self.DH.other_name}", fg=COLORS["text"], font="Rockwell 20",
+                          bg=COLORS["background"])
         sub_title.place(relx=0.5, rely=0.2, anchor=CENTER)
         p_label = Label(self, text=f"Shared prime (p): {self.DH.p}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
         x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg=COLORS["text"], font="Rockwell 16",
                         bg=COLORS["background"])
-        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
+        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16",
+                        bg=COLORS["background"])
         p_label.place(relx=0.50, rely=0.3, anchor=CENTER)
         g_label.place(relx=0.50, rely=0.4, anchor=CENTER)
         x_label.place(relx=0.50, rely=0.5, anchor=CENTER)
@@ -349,7 +358,8 @@ class ControlPanel(Tk):
         g_label = Label(self, text=f"Shared generator (g): {self.DH.g}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
         x_label = Label(self, text=f"Private value ({self.DH.name[0].lower()}): {self.DH.secret}", fg=COLORS["text"], font="Rockwell 16",
                         bg=COLORS["background"])
-        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16", bg=COLORS["background"])
+        X_label = Label(self, text=f"Public value ({self.DH.name[0].upper()}): {self.DH.public}", fg=COLORS["text"], font="Rockwell 16",
+                        bg=COLORS["background"])
         Y_label = Label(self, text=f"Public value ({self.DH.other_name[0].upper()}): {self.DH.remote_public}", fg=COLORS["text"], font="Rockwell 16",
                         bg=COLORS["background"])
         shared_label = Label(self, text=f"Shared key: {self.DH.shared_secret}", fg=COLORS["text"], font="Rockwell 18", bg=COLORS["background"])
@@ -401,3 +411,16 @@ class ControlPanel(Tk):
         send_button.place(relx=0.5, rely=0.9, anchor=CENTER)
 
         self.temp_items.extend([sub_title, secret_label, message_input, send_button])
+
+
+def ints_only(string):
+    """
+    :return: True if the string is an int
+    """
+    if string == "":  # Empty string is allowed
+        return True
+    try:
+        int(string)
+        return True
+    except ValueError:
+        return False
