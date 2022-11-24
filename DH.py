@@ -108,6 +108,9 @@ class DiffieHellman:
             case "public":  # Send the public key
                 data["type"] = "public"
                 data["public"] = self.public
+            case "start_chat":
+                data["type"] = "set_state"
+                data["state"] = "messaging"
             case _:
                 return False
 
@@ -178,6 +181,17 @@ class DiffieHellman:
                         response["public"] = self.public  # Send our public key, if we have already created it
                     response["success"] = True
 
+                case "set_state":  # Request to change the state of the client
+                    if "state" not in data:  # Check if the parameter is present
+                        response["error"] = "Missing parameters"
+                        return response
+                    try:
+                        CP.state = data["state"]  # Set the state of the control panel
+                    except Exception as e:
+                        response["error"] = str(e)
+                        return response
+                    response["success"] = True
+
                 case "message":  # If the request contains a message
                     if "message" not in data or "tag" not in data or "nonce" not in data:  # Check if all parameters are present
                         response["error"] = "Missing parameters"
@@ -232,6 +246,7 @@ def reset():
     DH.stop()
     DH = DiffieHellman(remote_ip=DH.remote_ip)
     CP.DH = DH
+    CP.name_label.config(text="")  # Reset the name label
     CP.state = 0
 
 
