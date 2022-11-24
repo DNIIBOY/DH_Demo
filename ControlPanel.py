@@ -75,15 +75,6 @@ class ControlPanel(Tk):
         self.DH.start()
         self.state = 1
 
-    def get_shared(self, p: int, g: int):
-        """
-        Set the shared values
-        """
-        self.lost_connection_label.place_forget()  # Remove the lost connection label
-        self.DH.p = p
-        self.DH.g = g
-        self.state = 2
-
     def submit_shared(self, p: int, g: int):
         """
         Submit the shared values and send them to the other user
@@ -115,7 +106,35 @@ class ControlPanel(Tk):
             self.DH.calculate_shared_secret()
             self.state = 4
 
-    def get_public(self, remote_public: int):
+    def send_message(self, message: str, field: Entry):
+        """
+        Send a message to the other client
+        """
+        if message == "":
+            return
+        if self.state == "messaging":
+            connection = self.DH.send_message(message)
+            if connection:
+                self.lost_connection_label.place_forget()
+            else:
+                self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
+        self.message_list.append(
+            Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
+        self.message_list[-1].pack(anchor=NE, pady=5, padx=5)
+        if len(self.message_list) > 9:
+            self.message_list.pop(0).destroy()  # Remove the oldest message
+        field.delete(0, END)
+
+    def receive_shared(self, p: int, g: int):
+        """
+        Set the shared values
+        """
+        self.lost_connection_label.place_forget()  # Remove the lost connection label
+        self.DH.p = p
+        self.DH.g = g
+        self.state = 2
+
+    def receive_public(self, remote_public: int):
         """
         Get the public values
         """
@@ -142,6 +161,23 @@ class ControlPanel(Tk):
             self.temp_items.extend([remote_public_label, remote_public_value])
         elif self.state == "awaiting_public":
             self.state = 4
+
+    def receive_message(self, message: str):
+        """
+        Receive a message from the other client
+        """
+        print(f"Received message: {message}")  # Print the message
+        if self.state != "messaging":
+            return
+        if message is False:  # If we receive a message that could not be decrypted
+            self.message_list.append(
+                Label(self.message_canvas, text="*Invalid Message*", fg=COLORS["error"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
+        else:
+            self.message_list.append(
+                Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
+        self.message_list[-1].pack(anchor=NW, pady=5, padx=5)
+        if len(self.message_list) > 8:
+            self.message_list.pop(0).destroy()  # Remove the oldest message
 
     def start(self):
         """
@@ -175,42 +211,6 @@ class ControlPanel(Tk):
         self.message_canvas.place_forget()
         for item in self.temp_items:
             item.destroy()
-
-    def send_message(self, message: str, field: Entry):
-        """
-        Send a message to the other client
-        """
-        if message == "":
-            return
-        if self.state == "messaging":
-            connection = self.DH.send_message(message)
-            if connection:
-                self.lost_connection_label.place_forget()
-            else:
-                self.lost_connection_label.place(relx=0.5, rely=0.9, anchor=CENTER)
-        self.message_list.append(
-            Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
-        self.message_list[-1].pack(anchor=NE, pady=5, padx=5)
-        if len(self.message_list) > 9:
-            self.message_list.pop(0).destroy()  # Remove the oldest message
-        field.delete(0, END)
-
-    def receive_message(self, message: str):
-        """
-        Receive a message from the other client
-        """
-        print(f"Received message: {message}")  # Print the message
-        if self.state != "messaging":
-            return
-        if message is False:  # If we receive a message that could not be decrypted
-            self.message_list.append(
-                Label(self.message_canvas, text="*Invalid Message*", fg=COLORS["error"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
-        else:
-            self.message_list.append(
-                Label(self.message_canvas, text=message, fg=COLORS["text"], font="Rockwell 16", bg=COLORS["accent2"], wraplength=500))
-        self.message_list[-1].pack(anchor=NW, pady=5, padx=5)
-        if len(self.message_list) > 8:
-            self.message_list.pop(0).destroy()  # Remove the oldest message
 
     def select_user(self):
         """

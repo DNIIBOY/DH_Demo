@@ -29,16 +29,16 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
 
 class DiffieHellman:
     def __init__(self, port=8080, name="", g=-1, p=-1, secret=-1, public=-1, remote_public=-1, shared_secret=-1, remote_ip="", remote_port=8080):
-        self.port = port
-        self._name = name
-        self.g = g
-        self.p = p
-        self.secret = secret
-        self.public = public
-        self.remote_public = remote_public
-        self.shared_secret = shared_secret
-        self.remote_ip = remote_ip
-        self.remote_port = remote_port
+        self.port = port  # Port to run the server on
+        self._name = name  # Name of the user, Alice or Bob
+        self.g = g  # Shared generator g
+        self.p = p  # Shared prime p
+        self.secret = secret  # Own secret key
+        self.public = public  # Own public key
+        self.remote_public = remote_public  # Remote public key
+        self.shared_secret = shared_secret  # Shared key K
+        self.remote_ip = remote_ip  # IP of the remote user
+        self.remote_port = remote_port  # Port of the remote user
 
         self.httpd = None  # HTTP server, gets initialized in start()
         self.server_thread = threading.Thread(target=self.run_server)  # Thread for the HTTP server
@@ -49,6 +49,9 @@ class DiffieHellman:
 
     @name.setter
     def name(self, value):
+        """
+        Update the name of the user, and change which port to run the server on
+        """
         self._name = value
         value = value.lower()
         if value == "alice":
@@ -59,7 +62,10 @@ class DiffieHellman:
             self.remote_port = 8000
 
     @property
-    def remote_name(self):
+    def remote_name(self) -> str:
+        """
+        :return: Expected name of the remote user
+        """
         if self.name.lower() == "alice":
             return "Bob"
         elif self.name.lower() == "bob":
@@ -83,15 +89,20 @@ class DiffieHellman:
         return self.shared_secret
 
     def send_request(self, request_type: str) -> bool:
-        url = f"http://{self.remote_ip}:{self.remote_port}/"
-        data = {"name": self.name}
+        """
+        Send a request to the remote user
+        :param request_type: 'shared' for the shared parameters, 'public' for the public key
+        :return:
+        """
+        url = f"http://{self.remote_ip}:{self.remote_port}/"  # URL to send the request to
+        data = {"name": self.name}  # Always send the name of the user, so we don't get two users with the same name
 
         match request_type:
-            case "shared":
+            case "shared":  # Send the shared parameters
                 data["type"] = "shared"
                 data["g"] = self.g
                 data["p"] = self.p
-            case "public":
+            case "public":  # Send the public key
                 data["type"] = "public"
                 data["public"] = self.public
             case _:
@@ -99,29 +110,39 @@ class DiffieHellman:
 
         print("Sending request: ", data)
         try:
-            r = requests.post(url, json=data).json()
-        except requests.exceptions.ConnectionError:
+            r = requests.post(url, json=data).json()  # Send the data
+        except requests.exceptions.ConnectionError:  # If the connection failed
             print("Connection error")
             return False
-        return r["success"]  # Return True, if successful
+        return r["success"]
 
-    def send_message(self, message):
+    def send_message(self, message) -> bool:
+        """
+        Send a message to the remote user
+        :param message: The message to send
+        :return: True if the message was sent successfully, False otherwise
+        """
         print(f"Sending message to {self.remote_name}")
         url = f"http://{self.remote_ip}:{self.remote_port}/"  # URL to send the message to
         enc = Encryption(self.shared_secret)  # Encryption object
-        msg, tag, nonce = enc.encrypt(message)  # Encrypt the message
-        data = {"name": self.name, "type": "message", "message": msg, "tag": tag, "nonce": nonce}  # Create the data to send
+        enc_msg, tag, nonce = enc.encrypt(message)  # Encrypt the message
+        data = {"name": self.name, "type": "message", "message": enc_msg, "tag": tag, "nonce": nonce}  # Create the data to send
         try:
             r = requests.post(url, json=data).json()  # Send the data
             return r["success"]  # Return whether the request was successful
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError:  # If the connection failed
             print("Connection error")
             return False
 
-    def receive_request(self, data):
+    def receive_request(self, data) -> dict:
+        """
+        Receive a request from the remote user
+        :param data: The request data
+        :return: The JSON response
+        """
         try:
             print("Received request: ", data)  # Print the received data
-            response = {"name": self.name, "success": False}  # Create a response, success is False by default
+            response = {"name": self.name, "success": False}  # Create a response, success is False until updated
 
             # Check if the request is from the expected sender, does not help for security, but is nice to have
             if data["name"].lower() != self.remote_name.lower():
@@ -135,7 +156,7 @@ class DiffieHellman:
                         return response  # Return response, if parameters are missing
                     self.p = data["p"]  # Set the shared parameters
                     self.g = data["g"]
-                    CP.get_shared(self.p, self.g)  # Update the control panel
+                    CP.receive_shared(self.p, self.g)  # Update the control panel
                     response["success"] = True  # Set success as True
 
                 case "public":  # If the request contains other party's public key
@@ -146,12 +167,12 @@ class DiffieHellman:
                     self.remote_public = data["public"]  # Set the remote public key value
                     if self.public != -1:  # If we have our own public key, calculate the shared secret
                         self.calculate_shared_secret()
-                    CP.get_public(self.remote_public)  # Update the control panel with the remote public key
+                    CP.receive_public(self.remote_public)  # Update the control panel with the remote public key
 
-                    # Respond if we are waiting for the other party's public key or if we have both public keys
-                    response["status"] = "awaiting" if self.public == -1 else "complete"
+                    # Status is pending, if we have not yet created our own public key
+                    response["status"] = "pending" if self.public == -1 else "complete"
                     if response["status"] == "complete":
-                        response["public"] = self.public  # Send our public key, if we have both public keys
+                        response["public"] = self.public  # Send our public key, if we have already created it
                     response["success"] = True
 
                 case "message":  # If the request contains a message
@@ -164,25 +185,36 @@ class DiffieHellman:
                     response["success"] = True
 
                 case _:
-                    response["error"] = "Invalid request type, expected 'shared' or 'public'"  # If the request type is invalid
+                    response["error"] = "Invalid request type, expected 'shared', 'public' or 'message'"  # If the request type is invalid
             return response
 
-        except:
+        except Exception as e:
             # If an error occurs, return a response with success as False
-            return {"name": self.name, "success": False, "error": "Internal server error"}
-            raise
+            return {"name": self.name, "success": False, "error": str(e)}
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Start the server
+        """
         server_address = ("", self.port)
         print("Starting server on ", server_address)
         self.httpd = HTTPServer(server_address, DHHTTPHandler)
         self.server_thread.start()
 
-    def stop(self):
-        self.httpd.shutdown()
-        self.server_thread.join(2)
+    def stop(self) -> None:
+        """
+        Stop the server
+        """
+        try:
+            self.httpd.shutdown()
+            self.server_thread.join(2)
+        except (AttributeError, RuntimeError):  # If the server is not running
+            pass
 
-    def run_server(self):
+    def run_server(self) -> None:
+        """
+        Function to run the server in a thread
+        """
         self.httpd.serve_forever()
 
 
@@ -203,6 +235,6 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = None
-    CP = None
+    DH: DiffieHellman = None
+    CP: ControlPanel = None
     main()
