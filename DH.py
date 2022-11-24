@@ -4,6 +4,7 @@ from encyption import Encryption
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import requests
+import sys
 import threading
 
 
@@ -195,6 +196,9 @@ def main():
 
 
 if __name__ == "__main__":
-    DH = DiffieHellman(remote_ip="127.0.0.1")
+    remote_ip = "127.0.0.1"
+    if len(sys.argv) > 1:
+        remote_ip = sys.argv[1]
+    DH = DiffieHellman(remote_ip=remote_ip)
     CP = ControlPanel(DH)
     main()
