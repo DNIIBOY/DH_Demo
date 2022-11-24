@@ -451,7 +451,7 @@ class ControlPanel(Tk):
             fg=COLORS["text"],
             font="Rockwell 14",
             borderwidth=0,
-            command=lambda: setattr(self, "state", "messaging")
+            command=lambda: (setattr(self, "state", "messaging"), self.DH.send_request("start_chat"))
         )
         p_label.place(relx=0, rely=0, anchor=NW)
         p_value.place(relx=0.4, rely=0, anchor=NW)
