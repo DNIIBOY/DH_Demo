@@ -1,5 +1,5 @@
 from ControlPanel import ControlPanel
-from encyption import Encryption
+from encryption import Encryption
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
