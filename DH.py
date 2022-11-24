@@ -220,6 +220,20 @@ class DiffieHellman:
         """
         self.httpd.serve_forever()
 
+    @staticmethod
+    def reset():
+        reset()
+
+
+def reset():
+    global DH
+    global CP
+    print("Resetting...")
+    DH.stop()
+    DH = DiffieHellman(remote_ip=DH.remote_ip)
+    CP.DH = DH
+    CP.state = 0
+
 
 def main():
     global DH
