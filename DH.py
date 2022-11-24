@@ -189,6 +189,13 @@ class DiffieHellman:
 def main():
     global DH
     global CP
+
+    remote_ip = "127.0.0.1"
+    if len(sys.argv) > 1:
+        remote_ip = sys.argv[1]
+
+    DH = DiffieHellman(remote_ip=remote_ip)
+    CP = ControlPanel(DH)
     CP.start()
 
     DH.stop()
@@ -196,9 +203,6 @@ def main():
 
 
 if __name__ == "__main__":
-    remote_ip = "127.0.0.1"
-    if len(sys.argv) > 1:
-        remote_ip = sys.argv[1]
-    DH = DiffieHellman(remote_ip=remote_ip)
-    CP = ControlPanel(DH)
+    DH = None
+    CP = None
     main()
