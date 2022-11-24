@@ -75,7 +75,7 @@ class DiffieHellman:
             return "Alice"
         return ""
 
-    def calculate_public(self) -> int:
+    def calculate_public_key(self) -> int:
         """
         Calculates the public key, based on the secret key and the shared parameters
         :return: The public key

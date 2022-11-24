@@ -93,7 +93,7 @@ class ControlPanel(Tk):
         Submit the secret value
         """
         self.DH.secret = secret
-        self.DH.calculate_public()
+        self.DH.calculate_public_key()
         connection = self.DH.send_request("public")
         if connection:
             self.lost_connection_label.place_forget()
