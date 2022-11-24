@@ -99,6 +99,7 @@ class DiffieHellman:
         """
         url = f"http://{self.remote_ip}:{self.remote_port}/"  # URL to send the request to
         data = {"name": self.name}  # Always send the name of the user, so we don't get two users with the same name
+        is_reset = False  # Should the client reset after the request?
 
         match request_type:
             case "shared":  # Send the shared parameters
@@ -108,15 +109,24 @@ class DiffieHellman:
             case "public":  # Send the public key
                 data["type"] = "public"
                 data["public"] = self.public
+            case "reset":  # Reset the client
+                data["type"] = "reset"
+                is_reset = True
             case _:
                 return False
 
         print("Sending request: ", data)
+        if is_reset:
+            try:
+                requests.post(url, json=data, timeout=0.01)  # Ignore any response
+            except requests.exceptions.ReadTimeout:
+                pass
+            self.reset()  # Reset the client
         try:
             r = requests.post(url, json=data).json()  # Send the data
         except requests.exceptions.ConnectionError:  # If the connection failed
             print("Connection error")
-            return False
+            r = {"success": False}
         return r["success"]
 
     def send_message(self, message) -> bool:
@@ -143,6 +153,7 @@ class DiffieHellman:
         :param data: The request data
         :return: The JSON response
         """
+        reset_self = False  # Should the client reset after the request?
         try:
             print("Received request: ", data)  # Print the received data
             response = {"name": self.name, "success": False}  # Create a response, success is False until updated
@@ -187,8 +198,14 @@ class DiffieHellman:
                     CP.receive_message(msg)  # Update the control panel with the message
                     response["success"] = True
 
+                case "reset":  # If the request is to reset the client
+                    reset_self = True
+
                 case _:
                     response["error"] = "Invalid request type, expected 'shared', 'public' or 'message'"  # If the request type is invalid
+
+            if reset_self:
+                self.reset()  # Reset the client
             return response
 
         except Exception as e:
@@ -208,11 +225,13 @@ class DiffieHellman:
         """
         Stop the server
         """
+        print("Closing server...")
         try:
             self.httpd.shutdown()
             self.server_thread.join(2)
         except (AttributeError, RuntimeError):  # If the server is not running
             pass
+        print("Server closed")
 
     def run_server(self) -> None:
         """
@@ -220,16 +239,15 @@ class DiffieHellman:
         """
         self.httpd.serve_forever()
 
-    @staticmethod
-    def reset():
+    def reset(self):
         reset()
 
 
 def reset():
     global DH
     global CP
-    print("Resetting...")
     DH.stop()
+    print("Resetting...")
     DH = DiffieHellman(remote_ip=DH.remote_ip)
     CP.DH = DH
     CP.state = 0

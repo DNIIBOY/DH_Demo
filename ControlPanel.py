@@ -207,7 +207,7 @@ class ControlPanel(Tk):
             fg=COLORS["text"],
             bg=COLORS["accent"],
             borderwidth=0,
-            command=lambda: self.DH.reset()
+            command=lambda: self.DH.send_request("reset")
         )
         reset_button.place(relx=0.10, rely=0.08, anchor=CENTER)
         title = Label(self, text="Diffie-Hellman", font="Rockwell 40", fg=COLORS["text"], bg=COLORS["background"])
