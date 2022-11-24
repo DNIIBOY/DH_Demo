@@ -17,11 +17,14 @@ class DHHTTPHandler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-    def do_POST(self):
+    def do_POST(self) -> None:
+        """
+        Handles POST requests
+        """
         content_length = int(self.headers["Content-Length"])  # Gets the size of data
         post_data = self.rfile.read(content_length)  # Gets the data itself
         post_data = json.loads(post_data.decode("utf-8"))  # Parse as json
-        response = DH.receive_request(post_data)
+        response = DH.receive_request(post_data)  # Pass data to DH and get response
 
         self._set_response()
         self.wfile.write(json.dumps(response).encode("utf-8"))  # Send response
@@ -44,11 +47,11 @@ class DiffieHellman:
         self.server_thread = threading.Thread(target=self.run_server)  # Thread for the HTTP server
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @name.setter
-    def name(self, value):
+    def name(self, value) -> None:
         """
         Update the name of the user, and change which port to run the server on
         """
